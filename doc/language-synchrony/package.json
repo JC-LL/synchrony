@@ -1,0 +1,10 @@
+{
+  "name": "language-synchrony",
+  "version": "0.0.0",
+  "description": "Synchrony language support in Atom",
+  "engines": {
+    "atom": "*"
+  },
+  "dependencies": {},
+  "license": "MIT"
+}

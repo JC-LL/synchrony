@@ -1,0 +1,40 @@
+'scopeName': 'source.synchrony'
+'name': 'synchrony'
+'fileTypes': ['syc','syn']
+
+'patterns': [
+    {
+    'match': '\#(.*)\\n'
+    'name': 'comment.line.synchrony'
+    }
+
+    {
+    'match': '\\b(circuit|sig|input|output)\\s+(\\w+(,\\w+)*)'
+    'captures':
+        '1':
+            'name': 'keyword.control.synchrony'
+        '2':
+            'name': 'entity.name.function.synchrony'
+    'name': 'meta.function.synchrony'
+    }
+    {
+    'match': '(<([a-zA-Z0-9\*]+)>)'
+    'name': 'support.constant.synchrony'
+    }
+    {
+    'match': 'and|or|xor|require'
+    'name': 'support.constant.keyword'
+    }
+    {
+    'match': '\\b(end|resize)\\b'
+    'name': 'keyword.control.synchrony'
+    }
+    {
+    'match': '(\\+|\\-|<=|=|=>|:=|>=|>|<|\\&|$|_|and|or|xor|!)'
+    'name': 'keyword.operator.synchrony'
+    }
+    {
+        'match': '(bit|uint[0-9]*|int[0-9]*)'
+        'name': 'support.type.synchrony'
+    }
+]
