@@ -102,15 +102,22 @@ module Synchrony
     end
 
     #============== expressions ==================
+
+    def visitUnary unary,args=nil
+      unary.op
+      unary.expr.accept(self)
+    end
+
     def visitBinary bin,args=nil
       bin.lhs.accept(self)
       bin.op
       bin.rhs.accept(self)
     end
 
-    def visitUnary unary,args=nil
-      unary.op
-      unary.expr.accept(self)
+    def visitTernary ternary,args=nil
+      ternary.cond.accept(self)
+      ternary.lhs.accept(self)
+      ternary.rhs.accept(self)
     end
 
     #=================terms=========================

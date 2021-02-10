@@ -12,7 +12,7 @@ module Synchrony
       keyword 'output'
       keyword 'end'
       keyword 'sig'
-    
+
       keyword 'bit'
       keyword 'byte'
       keyword 'sbyte'
@@ -57,7 +57,8 @@ module Synchrony
       token :concat            => /\A\_/
 
       # logical
-      token :eq                => /\A\=/
+      token :eq                => /\A\==/
+      token :assign            => /\A\=/
       token :neq               => /\A\/\=/
       token :gte               => /\A\>\=/
       token :gt                => /\A\>/

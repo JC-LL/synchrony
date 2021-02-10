@@ -166,7 +166,7 @@ module Synchrony
     end
 
     def parse_init
-      expect :eq
+      expect :assign
       parse_expr
     end
 
@@ -241,7 +241,7 @@ module Synchrony
           mapping << parse_term
         end
       end
-      expect :eq
+      expect :assign
       rhs=parse_expr
       if mapping
         mapping.rhs=rhs
@@ -265,7 +265,19 @@ module Synchrony
     end
 
     def parse_logical
-      parse_or
+      e=parse_or
+      if showNext.is_a? :qmark
+        e=parse_ternary(e)
+      end
+      e
+    end
+
+    def parse_ternary e
+      expect :qmark
+      e1=parse_expr
+      expect :colon
+      e2=parse_expr
+      Ternary.new(e,e1,e2)
     end
 
     def parse_or

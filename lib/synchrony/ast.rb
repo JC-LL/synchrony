@@ -168,6 +168,13 @@ module Synchrony
   end
 
   #================ expressions ===============
+  class Unary < AstNode
+    attr_accessor :op,:expr
+    def initialize op=nil,expr=nil
+      @op,@expr=op,expr
+    end
+  end
+
   class Binary < AstNode
     attr_accessor :lhs,:op,:rhs
     def initialize lhs=nil,op=nil,rhs=nil
@@ -175,12 +182,13 @@ module Synchrony
     end
   end
 
-  class Unary < AstNode
-    attr_accessor :op,:expr
-    def initialize op=nil,expr=nil
-      @op,@expr=op,expr
+  class Ternary < AstNode
+    attr_accessor :cond,:lhs,:rhs
+    def initialize cond=nil,lhs=nil,rhs=nil
+      @cond,@lhs,@rhs=cond,lhs,rhs
     end
   end
+
 
   class Call < AstNode
     attr_accessor :name,:actual_args

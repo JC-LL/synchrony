@@ -8,6 +8,7 @@ module Synchrony
     OP_STR={
       :excl   => "!",
       :concat => "_",
+      :eq     => "=="
     }
     def initialize
       @verbose=true
@@ -49,7 +50,9 @@ module Synchrony
       code.indent=2
       circ.inputs.each{|i|  code << i.accept(self)}
       circ.outputs.each{|o| code << o.accept(self)}
+      code.newline
       circ.sigs.each{|sig|  code << sig.accept(self)}
+      code.newline
       code << circ.body.accept(self)
       code.indent=0
       code << "end"
@@ -65,13 +68,13 @@ module Synchrony
     def visitOutput output,args=nil
       name=output.name.accept(self)
       type=output.type.accept(self)
-      "input #{name} : #{type}"
+      "output #{name} : #{type}"
     end
 
     def visitSig sig,args=nil
       name=sig.name.accept(self)
       type=sig.type.accept(self)
-      "input #{name} : #{type}"
+      "sig #{name} : #{type}"
     end
 
     #======================================================
@@ -132,6 +135,12 @@ module Synchrony
     end
 
     #============== expressions ==================
+    def visitUnary unary,args=nil
+      op=OP_STR[unary.op]||unary.op
+      expr=unary.expr.accept(self)
+      "#{op}#{expr}"
+    end
+
     def visitBinary bin,args=nil
       lhs=bin.lhs.accept(self)
       op=OP_STR[bin.op]||bin.op
@@ -139,12 +148,12 @@ module Synchrony
       "#{lhs} #{op} #{rhs}"
     end
 
-    def visitUnary unary,args=nil
-      op=OP_STR[unary.op]||unary.op
-      expr=unary.expr.accept(self)
-      "#{op}#{expr}"
+    def visitTernary ternary,args=nil
+      cond=ternary.cond.accept(self)
+      lhs=ternary.lhs.accept(self)
+      rhs=ternary.rhs.accept(self)
+      "#{cond} ? #{lhs} : #{rhs}"
     end
-
     #=================terms=========================
     def visitIdent ident,args=nil
       ident.token.val
