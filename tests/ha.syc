@@ -1,0 +1,6 @@
+circuit ha
+  input  a,b # implicit type 'bit'
+  output s,c
+  s = a xor b
+  c = a and b
+end

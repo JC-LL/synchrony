@@ -1,7 +1,12 @@
 class Token
   attr_accessor :kind,:val,:pos
-  def initialize tab
-    @kind,@val,@pos=*tab
+
+  def initialize kind,val,pos
+    @kind,@val,@pos=kind,val,pos
+  end
+
+  def accept(visitor,args=nil)
+    self
   end
 
   def is_a? kind
@@ -58,6 +63,6 @@ class Token
   end
 end
 
-ONE  = Token.new [:int_lit,'1',['na','na']]
-ZERO = Token.new [:int_lit,'0',['na','na']]
-DUMMY= Token.new [:id     ,'' ,['na','na']]
+ONE  = Token.new :int_lit,'1',['na','na']
+ZERO = Token.new :int_lit,'0',['na','na']
+DUMMY= Token.new :id     ,'' ,['na','na']

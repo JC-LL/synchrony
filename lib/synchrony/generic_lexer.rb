@@ -28,7 +28,7 @@ class GenericLexer
   end
 
   def next_token
-    return [nil,nil,nil] if @ssc.empty?
+    return nil if @ssc.empty?
     tok = get_token
     return (tok.is_a? :skip) ? next_token : tok
   end
@@ -37,7 +37,7 @@ class GenericLexer
     linecol=position()
     @rules.each do |rule, regexp|
       val = @ssc.scan(regexp)
-      return Token.new([rule, val, linecol]) if val
+      return Token.new(rule, val, linecol) if val
     end
     raise  "lexing error line #{linecol.first} around : ...'#{@ssc.peek(5)}'... "
   end

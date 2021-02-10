@@ -63,92 +63,106 @@ module Synchrony
 
     def parse_require
       expect :require
-      expect :string_literal
+      tok=expect :string_literal
+      Require.new(Str.new(tok))
     end
 
     def parse_circuit
+      circuit=Circuit.new
       expect :circuit
-      expect :ident
-      parse_parameters
+      circuit.name=Ident.new(expect :ident)
+      circuit.parameters=parse_parameters
       while showNext.is_a? [:input,:output,:sig]
         case showNext.kind
         when :input
-          parse_input
+          circuit.inputs << parse_input
+          circuit.inputs.flatten!
         when :output
-          parse_output
+          circuit.outputs << parse_output
+          circuit.outputs.flatten!
         when :sig
-          parse_sig
+          circuit.sigs << parse_sig
+          circuit.sigs.flatten!
         else
           raise "unknown token '#{showNext}'"
         end
       end
-      parse_body
+      circuit.body=parse_body
       expect :end
+      circuit
     end
 
     def parse_parameters
+      params=[]
       if showNext.is_a? :lbrace
         expect :lbrace
-        expect :ident
+        params << Ident.new(expect :ident)
         while showNext.is_a?(:comma)
           acceptIt
-          expect :ident
+          params << Ident.new(expect :ident)
         end
         expect :rbrace
       else
         return nil
       end
+      params
     end
 
     def parse_input
-      #puts "parse_input"
+      inputs=[]
       expect :input
-      expect :ident
+      inputs << Input.new(Ident.new(expect :ident))
       while showNext.is_a? :comma
         acceptIt
-        expect :ident
+        inputs << Input.new(Ident.new(expect :ident))
       end
       if showNext.is_a? :colon
         acceptIt
-        parse_type
+        type=parse_type
       else
-        # bit
+        type=Bit.new
       end
+      inputs.each{|i| i.type=type}
+      inputs
     end
 
     def parse_output
-      #puts "parse_output"
+      outputs=[]
       expect :output
-      expect :ident
+      outputs << Output.new(Ident.new(expect :ident))
       while showNext.is_a? :comma
         acceptIt
-        expect :ident
+        outputs << Output.new(Ident.new(expect :ident))
       end
       if showNext.is_a? :colon
         acceptIt
-        parse_type
+        type=parse_type
       else
-        # bit
+        type=Bit.new
       end
+      outputs.each{|o| o.type=type}
+      outputs
     end
 
     def parse_sig
-      #puts "parse_sig"
+      sigs=[]
       expect :sig
-      expect :ident
+      sigs << Sig.new(Ident.new(expect :ident))
       while showNext.is_a? :comma
         acceptIt
-        expect :ident
+        sigs << Sig.new(Ident.new(expect :ident))
       end
       if showNext.is_a? :colon
         acceptIt
-        parse_type
+        type=parse_type
       else
-        # bit
+        type=Bit.new
       end
-      if showNext.is_a? :eq
-        parse_init
-      end
+      # if showNext.is_a? :eq
+      #   parse_init
+      # end
+      sigs.each{|sig| sig.type=type}
+      sigs
     end
 
     def parse_init
@@ -159,53 +173,81 @@ module Synchrony
     def parse_type
       case showNext.kind
       when :bit,:int,:uint,:byte,:sbyte
-        acceptIt
+        tok=acceptIt
+        case tok.kind
+        when :bit
+          type=Bit.new
+        when :uint
+          type=Uint.new(tok)
+        when :int
+          type=Int.new(tok)
+        when :byte
+          type=Byte.new
+        when :sbyte
+          type=Sbyte.new
+        end
       else
         raise "unknow type : '#{showNext.val}'"
       end
       # array type :
       while showNext.is_a? :lbrack
         acceptIt
-        parse_expr
+        e=parse_expr
         expect :rbrack
+        type=ArrayType.new(size=e,type)
       end
       # parameterized type
       if showNext.is_a? :lbrace
-        parse_type_parameter
+        parameter=parse_type_parameter
+        type=ParameterizedType.new(parameter,type)
       end
+      type
     end
 
     def parse_type_parameter
       expect :lbrace
       if showNext.is_a? :qmark
         acceptIt
+        return UnknownParameter.new
       else
-        parse_expr
+        return parse_expr
       end
       expect :rbrace
     end
 
     def parse_body
+      body=Body.new
       while showNext.is_not_a? :end
         case showNext.kind
         when :ident
-          parse_assignement
+          body << parse_assignement
         when :lbrace
-          parse_step
+          body << parse_step
         else
           raise "unknow statement line #{showNext.pos.first} : #{showNext}"
         end
       end
+      body
     end
 
     def parse_assignement
-      parse_term
-      while showNext.is_a?(:comma)
-        acceptIt
-        parse_term
+      lhs=parse_term
+      if showNext.is_a?(:comma)
+        # positional mapping
+        mapping=Mapping.new
+        mapping << lhs
+        while showNext.is_a?(:comma)
+          acceptIt
+          mapping << parse_term
+        end
       end
       expect :eq
-      parse_expr
+      rhs=parse_expr
+      if mapping
+        mapping.rhs=rhs
+        return mapping
+      end
+      Assignment.new(lhs,rhs)
     end
 
     def parse_expr
@@ -213,11 +255,13 @@ module Synchrony
     end
 
     def parse_concat
-      parse_logical
+      lhs=parse_logical
       while showNext.is_a? :concat
         acceptIt
-        parse_logical
+        rhs=parse_logical
+        lhs=Binary.new(lhs,:concat,rhs)
       end
+      lhs
     end
 
     def parse_logical
@@ -283,7 +327,7 @@ module Synchrony
     end
 
     def parse_term
-      parse_term_2
+      term=parse_term_2
       while showNext.is_a? [:lbrack,:dot,:dollar,:dot2]
         case showNext.kind
         when :lbrack
@@ -299,14 +343,18 @@ module Synchrony
           acceptIt
           if showNext.is_a? :lparen
             acceptIt
-            parse_expr
+            init=parse_expr
             expect :rparen
           end
+          term=Reg.new(term,init)
         when :dot2
           acceptIt
-          parse_term_2
+          lhs=term
+          rhs=parse_term_2
+          term=Range.new(lhs,rhs)
         end
       end
+      term
     end
 
     def parse_term_2
@@ -324,6 +372,13 @@ module Synchrony
           end
           expect :rparen
           term=Call.new(name,args)
+          if name=="reg" # '==' redefined for Ident !
+            if args.size > 2
+              raise "ERROR : reg may have 1..2 arguments [expr,init] but not more !"
+            end
+            expr,init=args[0..1]
+            term=Reg.new(expr,init)
+          end
         end
       when :int_literal
         tok=acceptIt
