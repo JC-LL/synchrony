@@ -5,7 +5,10 @@ module Synchrony
   class PrettyPrinter
 
     attr_accessor :code
-
+    OP_STR={
+      :excl   => "!",
+      :concat => "_",
+    }
     def initialize
       @verbose=true
       @verbose=false
@@ -131,15 +134,15 @@ module Synchrony
     #============== expressions ==================
     def visitBinary bin,args=nil
       lhs=bin.lhs.accept(self)
-      op=bin.op
-      op="_" if op==:concat
+      op=OP_STR[bin.op]||bin.op
       rhs=bin.rhs.accept(self)
       "#{lhs} #{op} #{rhs}"
     end
 
     def visitUnary unary,args=nil
-      unary.op
-      unary.expr.accept(self)
+      op=OP_STR[unary.op]||unary.op
+      expr=unary.expr.accept(self)
+      "#{op}#{expr}"
     end
 
     #=================terms=========================
