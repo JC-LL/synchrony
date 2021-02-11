@@ -71,7 +71,7 @@ module Synchrony
       circuit=Circuit.new
       expect :circuit
       circuit.name=Ident.new(expect :ident)
-      circuit.parameters=parse_parameters
+      circuit.params=parse_parameters
       while showNext.is_a? [:input,:output,:sig]
         case showNext.kind
         when :input
@@ -102,8 +102,6 @@ module Synchrony
           params << Ident.new(expect :ident)
         end
         expect :rbrace
-      else
-        return nil
       end
       params
     end

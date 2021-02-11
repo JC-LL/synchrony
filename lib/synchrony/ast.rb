@@ -57,13 +57,13 @@ module Synchrony
 
   class Circuit < AstNode
     attr_accessor :name,:inputs,:outputs,:sigs,:body
-    attr_accessor :parameters
-    def initialize name=nil,parameters=[]
-      @name,@parameters=name,parameters
-      @inputs=[]
-      @outputs=[]
-      @sigs=[]
-      @body=nil
+    attr_accessor :params
+    attr_accessor :symtable
+    def initialize name=nil,parameters=[],inputs=[],outputs=[],sigs=[],body=nil
+      @name,@params=name,parameters
+      @inputs,@outputs=inputs,outputs
+      @sigs=sigs
+      @body=body
     end
   end
 
@@ -140,8 +140,8 @@ module Synchrony
 
   class Body < AstNode
     attr_accessor :stmts
-    def initialize
-      @stmts=[]
+    def initialize stmts=[]
+      @stmts=stmts
     end
 
     def <<(e)

@@ -1,26 +1,34 @@
 require_relative 'code'
+require_relative 'transformer'
 
 module Synchrony
 
-  class PrettyPrinter
+  class PrettyPrinter < Transformer
 
     attr_accessor :code
     OP_STR={
+      :add    => "+",
+      :mul    => "*",
       :excl   => "!",
       :concat => "_",
       :eq     => "=="
     }
+
     def initialize
       @verbose=true
       @verbose=false
     end
 
-    def print ast
+    def print ast,pass_name=nil
       begin
         code=Code.new
         code << "# pretty printing"
         code << ast.accept(self)
-        puts code.finalize
+        #puts code.finalize
+        pass_name||="pp"
+        filename=$basename+"_#{pass_name}.syc"
+        code.save_as filename,$verbose
+        info 2,"code saved as '#{filename}'"
       rescue Exception => e
         puts e.backtrace
         puts e
@@ -196,7 +204,7 @@ module Synchrony
     end
 
     def visitStr str,args=nil
-      str
+      str.tok.val
     end
 
     def visitRange range,args=nil
