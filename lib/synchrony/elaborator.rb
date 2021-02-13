@@ -11,7 +11,7 @@ module Synchrony
       $verbose=false
     end
 
-    # we suppose that the circuit has been checker in a previous pass.
+    # we suppose that the circuit has been checked in a previous pass.
     def elaborate ast
       begin
         ast.accept(self)
@@ -57,19 +57,28 @@ module Synchrony
       circ.inputs.each do |input|
         name=input.name.str
         @netlist.add port=RTL::Port.new(:in,name)
-        @symtable[name]=port
+        #====== to make it more beautiful on graphviz...=====
+        # intermediate 'sig'....
+        @netlist.add sig =RTL::Sig.new("sig_#{name}")
+        sig.type=input.type
+        port.connect sig
+        @symtable[name]=sig
+        #====================================================
+        port.type=input.type
       end
 
       circ.outputs.each do |output|
         name=output.name.str
         @netlist.add port=RTL::Port.new(:out,name)
+        port.type=output.type
         @symtable[name]=port
       end
 
       circ.sigs.each do |sig|
         name=sig.name.str
-        @netlist.add sig=RTL::Sig.new(name)
-        @symtable[name]=sig
+        @netlist.add port=RTL::Sig.new(name)
+        port.type=sig.type
+        @symtable[name]=port
       end
     end
 
@@ -80,9 +89,9 @@ module Synchrony
         assign=mapping=stmt
         case stmt
         when Assignment
-          port_sink=@symtable[assign.lhs.str]
-          port_source=build(assign.rhs)
-          port_source.connect port_sink
+          port_sink=@symtable[assign.lhs.str] # get lhs
+          port_source=build(assign.rhs)       # build cicuit for rhs
+          port_source.connect port_sink       # connect
         when Mapping
           call=mapping.rhs
           call_name=call.name.str
@@ -115,7 +124,7 @@ module Synchrony
     end
 
     def build expr
-      ident=unary=binary=ternary=parenth=expr
+      ident=unary=binary=ternary=parenth=reg=expr
       case expr
       when Ident
         return @symtable[ident.str]
@@ -141,8 +150,15 @@ module Synchrony
         i2.connect gate_i2
         return comp.port_named(:out,"f")
       when Parenth
-        info 4,"build #{expr.str}"
+        info -1,"build #{expr.str}"
         return build(parenth.expr)
+      when Reg
+        info 3,"build #{expr.str}"
+        e=build(reg.expr)
+        @netlist.add reg=RTL::Reg.new
+        d=reg.port_named(:in,"d")
+        e.connect d
+        return reg.port_named(:out,"q")
       when Ternary
         info -1,"build #{expr.str}"
         raise "NIY : ternary"

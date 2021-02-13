@@ -30,7 +30,7 @@
     'name': 'keyword.control.synchrony'
     }
     {
-    'match': '(\\+|\\-|<=|=|=>|:=|>=|>|<|\\&|$|_|and|or|xor|!)'
+    'match': '(\\+|\\-|<=|=|=>|:=|>=|>|<|\\&|$|_|and|or|xor|reg|!)'
     'name': 'keyword.operator.synchrony'
     }
     {
