@@ -146,7 +146,7 @@ module Synchrony
     def visitUnary unary,args=nil
       op=OP_STR[unary.op]||unary.op
       expr=unary.expr.accept(self)
-      "#{op}#{expr}"
+      "(#{op} #{expr})"
     end
 
     def visitBinary bin,args=nil

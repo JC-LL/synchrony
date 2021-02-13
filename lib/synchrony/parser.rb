@@ -413,6 +413,7 @@ module Synchrony
     def parse_unary
       if showNext.is_a? [:excl,:not,:sub,:bitwise_not]
         op=acceptIt.kind
+        op=:not if op==:excl
         e=parse_expr
         return Unary.new(op,e)
       else

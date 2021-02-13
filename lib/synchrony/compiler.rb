@@ -23,11 +23,11 @@ module Synchrony
       info 0,"compiling #{filename}"
       $basename=File.basename(filename,'.syc')
       ast=parse(filename)
-      visit(ast)
-      pretty_print(ast)
-      new_ast=dummy_transform(ast) # to check transformer is ok
-      pretty_print(new_ast,"tr")
-      elaborate(new_ast)
+      #visit(ast)
+      #pretty_print(ast)
+      #new_ast=dummy_transform(ast) # to check transformer is ok
+      #pretty_print(new_ast,"tr")
+      elaborate(ast)
     end
 
     def parse filename

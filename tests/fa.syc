@@ -1,8 +1,13 @@
+require "ha"
+
 circuit fa
   input  a,b,ci
   output s,co
-  sig s1,c1
-  s1,c1 = ha(a,b)      # positional mapping
-  s ,c2 = ha(ci,s1)
+  
+  sig s1,c1,c2
+
+  s1,c1 = ha(b,ci) # positional mapping
+  s ,c2 = ha(a,s1)
   co    = c1 or c2
+
 end

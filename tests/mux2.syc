@@ -1,0 +1,6 @@
+circuit Mux2
+  input a,b,c
+  output f
+
+  f = (a and !c) or (b and c)
+end
