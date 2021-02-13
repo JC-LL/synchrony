@@ -1,5 +1,8 @@
-#require "rtl"
-require_relative "../../../rtl/lib/rtl"
+require "rtl"
+
+# for dev :
+# require_relative "../../../rtl/lib/rtl"
+
 require_relative 'transformer'
 
 module Synchrony
@@ -114,12 +117,16 @@ module Synchrony
     end
 
     def instanciate_component name
+      @lib||={}
       if component=@lib[name]
         info 4,"found component '#{name}' in library. Good."
         instance=component.new_instance
         return instance
       else
-        info 4,"ERROR : can't find component named '#{call_name}' in library. Did you compiled it ?"
+        info 4,"ERROR : can't find component named '#{name}' in library."
+        info 4,"       Did you compiled it ?"
+        info 4,"       Did you required it ?"
+        raise
       end
     end
 
