@@ -45,7 +45,7 @@ circuit test_1
   sig s1,s2,s3 : bit
   sig s4       : byte  # equiv uint8
   sig s5       : sbyte # -128 to 127, equiv int8
-  sig s6,s7    : bit
+  sig s6,s7,s8    : bit
 
   s1       = a and reg(e)        # reg syntax (async init with reg(e,0))
   s2       = s1 or e$(0)         # alternative reg syntax, with e init at 0
@@ -55,6 +55,7 @@ circuit test_1
   s6,s7    = ha(a,e)             # positional circuit returns
   s4       = b*2                 # hummm result will be on size(b)+1
                                  # +,-,*,/,rem,mod
+  s8 = a ? (b or c) : (b xor a)  # ternary expressions / mux 
 end
 ```
 ## Install

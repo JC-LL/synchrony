@@ -28,5 +28,5 @@ Gem::Specification.new do |s|
   s.files += Dir["tests/*/*.syc"]
   s.homepage    = 'http://www.github.com/JC-LL/synchrony'
   s.license       = 'GPL-2.0-only'
-  s.add_runtime_dependency 'rtl_circuit', '>= 0.6'
+  s.add_runtime_dependency 'rtl_circuit', '>= 0.7.1'
 end
