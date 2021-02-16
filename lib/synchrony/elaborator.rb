@@ -1,7 +1,7 @@
 require "rtl"
 
 # for dev :
-# require_relative "../../../rtl/lib/rtl"
+require_relative "../../../rtl/lib/rtl"
 
 require_relative 'transformer'
 
@@ -48,9 +48,12 @@ module Synchrony
       collect_symbols(circ)
       circ.body.accept(self)
       @netlist.make_lib
+      @netlist
       info 2,"netlist for '#{name}' built successfully and put in library"
       info 2,"generating graphviz : #{circ.name.str}.dot"
       @netlist.to_dot
+      info 2,"print_hierarchy : "
+      @netlist.print_hierarchy
     end
 
     def collect_symbols circ
@@ -160,7 +163,7 @@ module Synchrony
         info -1,"build #{expr.str}"
         return build(parenth.expr)
       when Reg
-        info 3,"build #{expr.str}"
+        info -1,"build #{expr.str}"
         e=build(reg.expr)
         @netlist.add reg=RTL::Reg.new
         d=reg.port_named(:in,"d")
@@ -168,7 +171,14 @@ module Synchrony
         return reg.port_named(:out,"q")
       when Ternary
         info -1,"build #{expr.str}"
-        raise "NIY : ternary"
+        cond=build(ternary.cond)
+        i1=build(ternary.lhs)
+        i2=build(ternary.rhs)
+        @netlist.add mux=RTL::Mux.new
+        i1.connect mux.port("i0")
+        i2.connect mux.port("i1")
+        cond.connect mux.port("sel")
+        return mux.port("f")
       else
         raise "ERROR : don't know how to build #{expr.str}"
       end

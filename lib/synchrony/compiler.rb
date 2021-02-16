@@ -29,7 +29,7 @@ module Synchrony
       #pretty_print(new_ast,"tr")
       elaborate(ast)
     end
-
+    
     def parse filename
       @ast=Parser.new.parse filename
     end
