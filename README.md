@@ -6,17 +6,19 @@ _**warning** : work in progress / experimental_
 Synchrony is a tiny Hardware description DSL.
 
 ```
-require "ha"                           # build your own libraries (here : reuse half adder!)
+require "ha"
 
 circuit Example
-  input a,b,c,d                        # by default type is 'bit'
-  output o1,o2
+  input a,b,c,d,e,f
+  output o1,o2,o3
 
-  sig s1,s2                            # intermediate signals
+  sig s1,s2,s3
 
-  o1=s1 and c and !d                   # simple expressions
-  s1,s2=ha(a,b)                        # use library elements, positional mapping
-  o2=(a and b) or (c and d) or reg(s2) # DFF named 'reg'  
+  o1=(s1 and c) or (d and !d) and (e xor f)    # simple expressions
+  s1,s2=ha(a,b)                                # use library elements
+  o2=(a and b) or (c and d) or reg(s2)         # DFF named 'reg'
+  s3=reg(a and s3)
+  o3=s3
 end
 ```
 
@@ -55,7 +57,7 @@ circuit test_1
   s6,s7    = ha(a,e)             # positional circuit returns
   s4       = b*2                 # hummm result will be on size(b)+1
                                  # +,-,*,/,rem,mod
-  s8 = a ? (b or c) : (b xor a)  # ternary expressions / mux 
+  s8 = a ? (b or c) : (b xor a)  # ternary expressions / mux
 end
 ```
 ## Install
