@@ -120,6 +120,10 @@ module Synchrony
       ternary.rhs.accept(self)
     end
 
+    def visitNary nary,args=nil
+      nary.exprs.each{|e| e.accept(self)}
+    end
+
     #=================terms=========================
     def visitIdent ident,args=nil
       ident.token.accept(self)

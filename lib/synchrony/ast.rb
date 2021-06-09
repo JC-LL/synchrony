@@ -168,6 +168,12 @@ module Synchrony
   end
 
   #================ expressions ===============
+  class Nary < AstNode
+    attr_accessor :op,:exprs
+    def initialize op=nil,exprs=[]
+      @op,@exprs=op,exprs
+    end
+  end
   class Unary < AstNode
     attr_accessor :op,:expr
     def initialize op=nil,expr=nil
@@ -179,6 +185,10 @@ module Synchrony
     attr_accessor :lhs,:op,:rhs
     def initialize lhs=nil,op=nil,rhs=nil
       @lhs,@op,@rhs=lhs,op,rhs
+    end
+
+    def exprs
+      [lhs,rhs]
     end
   end
 

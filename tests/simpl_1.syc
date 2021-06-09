@@ -1,0 +1,13 @@
+circuit simpl_1
+  input  a,b
+  output f1,f2,f3,f4,f5,f6,f7
+
+  f1 = 1 and 1                      # returns 1
+  f2 = a or b or (1 and 1)          # returns 1
+  f3 = !(a or b or (1 and 1))       # returns 0
+  f4 = !(a and b and (1 or 0))      # returns (not (a and b))
+  f5 = a and a                      # returns a
+  f6 = (a or b) and !(a or b)       # returns 0
+  f7 = (a or b) and !(a or b or 0)  # returns 0
+
+end

@@ -395,7 +395,7 @@ module Synchrony
         term=IntLit.new(tok)
       when :lparen
         term=parse_parenth
-      when :sub,:not,:excl,:bitwise_not
+      when :sub,:not,:div,:excl,:bitwise_not
         term=parse_unary
       else
         raise "wrong expression on line #{showNext.pos.first}. Got '#{showNext.val}'"
@@ -411,13 +411,14 @@ module Synchrony
     end
 
     def parse_unary
-      if showNext.is_a? [:excl,:not,:sub,:bitwise_not]
+      if showNext.is_a? [:excl,:not,:sub,:div,:bitwise_not]
         op=acceptIt.kind
         op=:not if op==:excl
+        op=:not if op==:div
         e=parse_expr
         return Unary.new(op,e)
       else
-        raise "expecting unary expression : '!', 'not', '-' or '~' "
+        raise "expecting unary expression : '!', 'not', '/', '-' or '~' "
       end
     end
 

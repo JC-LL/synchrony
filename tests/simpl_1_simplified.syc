@@ -1,0 +1,21 @@
+# pretty printing
+circuit simpl_1
+  input a : bit
+  input b : bit
+  output f1 : bit
+  output f2 : bit
+  output f3 : bit
+  output f4 : bit
+  output f5 : bit
+  output f6 : bit
+  output f7 : bit
+ 
+ 
+  f1 = 1
+  f2 = 1
+  f3 = 0
+  f4 = (not (a and b))
+  f5 = a
+  f6 = 0
+  f7 = 0
+end

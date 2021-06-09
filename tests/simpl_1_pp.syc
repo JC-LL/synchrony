@@ -1,0 +1,28 @@
+# pretty printing
+circuit simpl_1
+  input a : bit
+  input b : bit
+  input c : bit
+  input d : bit
+  input e1 : bit
+  input e2 : bit
+  input e3 : bit
+  output f : uint10
+  output f1 : bit
+  output f2 : bit
+  output f3 : bit
+  output f4 : bit
+  output f5 : bit
+  output f6 : bit
+  output f7 : bit
+  output g1 : bit
+  output g2 : bit
+  output g3 : bit
+  output g4 : bit
+  output g5 : bit
+  output g6 : bit
+  output g7 : bit
+ 
+ 
+  g4 = a or b or (1 and 1)
+end

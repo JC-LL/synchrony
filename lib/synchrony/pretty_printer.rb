@@ -29,6 +29,8 @@ module Synchrony
         filename=$basename+"_#{pass_name}.syc"
         code.save_as filename,$verbose
         info 2,"code saved as '#{filename}'"
+        puts code.finalize
+        return code
       rescue Exception => e
         puts e.backtrace
         puts e
@@ -161,6 +163,11 @@ module Synchrony
       lhs=ternary.lhs.accept(self)
       rhs=ternary.rhs.accept(self)
       "#{cond} ? #{lhs} : #{rhs}"
+    end
+
+    def visitNary nary,args=nil
+      exprs=nary.exprs.map{|e| e.accept(self)}
+      exprs.join(" #{nary.op} ")
     end
     #=================terms=========================
     def visitIdent ident,args=nil

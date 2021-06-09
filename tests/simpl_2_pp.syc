@@ -1,0 +1,38 @@
+# pretty printing
+circuit test_1
+  input a : bit
+  input b : bit
+  input c : bit
+  input d : bit
+  input e1 : bit
+  input e2 : bit
+  input e3 : bit
+  output f : uint10
+  output f1 : bit
+  output f2 : bit
+  output f3 : bit
+  output f4 : bit
+  output f5 : bit
+  output f6 : bit
+  output f7 : bit
+  output g1 : bit
+  output g2 : bit
+  output g3 : bit
+  output g4 : bit
+  output g5 : bit
+  output g6 : bit
+  output g7 : bit
+ 
+ 
+  f1 = a and b and c
+  f2 = d and (e1 or e2)
+  f3 = d and (e2 and e3)
+  f4 = (not (not (not a)))
+  f5 = (not 1)
+  f6 = (not 1)
+  f7 = (not (1))
+  g1 = (not 0)
+  g2 = a and b and 0
+  g3 = 1 and 1
+  g4 = a or b or (1 and 1)
+end

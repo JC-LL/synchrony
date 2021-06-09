@@ -2,6 +2,8 @@ require_relative 'parser'
 require_relative 'visitor'
 require_relative 'pretty_printer'
 require_relative 'elaborator'
+require_relative 'nary_transformer'
+require_relative 'boolean_simplifier'
 require_relative 'transformer'
 require_relative 'code'
 require_relative 'info_printer'
@@ -12,7 +14,7 @@ module Synchrony
 
     attr_accessor :options
     attr_accessor :project_name
-
+    attr_accessor :ast
     include InfoPrinter
 
     def initialize options={}
@@ -22,14 +24,15 @@ module Synchrony
     def compile filename
       info 0,"compiling #{filename}"
       $basename=File.basename(filename,'.syc')
-      ast=parse(filename)
+      @ast=parse(filename)
       #visit(ast)
       #pretty_print(ast)
       #new_ast=dummy_transform(ast) # to check transformer is ok
       #pretty_print(new_ast,"tr")
-      elaborate(ast)
+      simplify(@ast)
+      elaborate(@ast)
     end
-    
+
     def parse filename
       @ast=Parser.new.parse filename
     end
@@ -44,6 +47,15 @@ module Synchrony
       PrettyPrinter.new.print(ast,pass_name)
     end
 
+    def simplify ast
+      info 1,"boolean simplifications"
+      nary_ast=NaryTransformer.new.transform(ast)
+      #pretty_print nary_ast
+      @ast=BooleanSimplifier.new.simplify(nary_ast)
+      pretty_print @ast,"simplified"
+      abort
+    end
+
     def dummy_transform ast
       info 1,"dummy transform "
       Transformer.new.transform(ast)
@@ -53,6 +65,5 @@ module Synchrony
       info 1,"elaboration"
       Elaborator.new.elaborate(ast)
     end
-
   end
 end

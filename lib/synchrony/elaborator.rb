@@ -134,12 +134,13 @@ module Synchrony
     end
 
     def build expr
-      ident=unary=binary=ternary=parenth=reg=expr
+      ident=unary=binary=ternary=parenth=reg=cst=nary=expr
+      info -1,"build #{expr.str}"
       case expr
       when Ident
         return @symtable[ident.str]
       when Unary
-        info -1,"build #{expr.str}"
+
         op=binary.op.to_s.capitalize
         klass=Object.const_get("RTL::"+op)
         @netlist.add comp=klass.new
@@ -148,7 +149,6 @@ module Synchrony
         i1.connect gate_i1
         return comp.port_named(:out,"f")
       when Binary
-        info -1,"build #{expr.str}"
         op=binary.op.to_s.capitalize
         klass=Object.const_get("RTL::"+op)
         @netlist.add comp=klass.new
@@ -160,17 +160,14 @@ module Synchrony
         i2.connect gate_i2
         return comp.port_named(:out,"f")
       when Parenth
-        info -1,"build #{expr.str}"
         return build(parenth.expr)
       when Reg
-        info -1,"build #{expr.str}"
         e=build(reg.expr)
         @netlist.add reg=RTL::Reg.new
         d=reg.port_named(:in,"d")
         e.connect d
         return reg.port_named(:out,"q")
       when Ternary
-        info -1,"build #{expr.str}"
         cond=build(ternary.cond)
         i1=build(ternary.lhs)
         i2=build(ternary.rhs)
@@ -179,6 +176,17 @@ module Synchrony
         i2.connect mux.port("i1")
         cond.connect mux.port("sel")
         return mux.port("f")
+      when Nary
+        @netlist.add ngate=RTL::NaryGate.new(nary.op)
+        inputs=nary.exprs.map{|e| build(e)}
+        inputs.each_with_index do |input,idx|
+          ngate.add ei=RTL::Port.new(:in,"i#{idx}")
+          input.connect ei
+        end
+        return ngate.port("f")
+      when IntLit
+        @netlist.add cst=RTL::Const.new(cst)
+        return cst.port("f")
       else
         raise "ERROR : don't know how to build #{expr.str}"
       end
