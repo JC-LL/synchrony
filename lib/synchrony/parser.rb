@@ -249,17 +249,7 @@ module Synchrony
     end
 
     def parse_expr
-      parse_concat
-    end
-
-    def parse_concat
-      lhs=parse_logical
-      while showNext.is_a? :concat
-        acceptIt
-        rhs=parse_logical
-        lhs=Binary.new(lhs,:concat,rhs)
-      end
-      lhs
+      parse_logical
     end
 
     def parse_logical
@@ -395,6 +385,8 @@ module Synchrony
         term=IntLit.new(tok)
       when :lparen
         term=parse_parenth
+      when :lbrace
+        term=parse_concat
       when :sub,:not,:div,:excl,:bitwise_not
         term=parse_unary
       else
@@ -408,6 +400,18 @@ module Synchrony
       e=parse_expr
       expect :rparen
       Parenth.new(e)
+    end
+
+    def parse_concat
+      exprs=[]
+      expect :lbrace
+      exprs << parse_expr
+      while showNext.is_a? :comma
+        acceptIt
+        exprs << parse_expr
+      end
+      expect :rbrace
+      Concat.new(exprs)
     end
 
     def parse_unary

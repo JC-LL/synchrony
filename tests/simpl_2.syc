@@ -17,4 +17,7 @@ circuit simpl_2
   g2 = a and b and 0
   g3 = 1 and 1
   g4 = a or b or (1 and 1)
+  g5 = a and !a
+  g6 = (a or b) and !(a or b)
+  g7 = (a or b) and /(a or b)
 end

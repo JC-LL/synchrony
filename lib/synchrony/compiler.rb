@@ -29,7 +29,7 @@ module Synchrony
       #pretty_print(ast)
       #new_ast=dummy_transform(ast) # to check transformer is ok
       #pretty_print(new_ast,"tr")
-      simplify(@ast)
+      simplify(@ast) if @options[:simplify]
       elaborate(@ast)
     end
 

@@ -1,0 +1,12 @@
+circuit TestConcat
+  input a,b
+  input c : bit[6]
+  output f : bit[8]
+
+  sig s1, s2
+
+  s1 = (a and b) or 1
+
+  bv = {a or 1,b, reg( not(!0)) }
+
+end

@@ -148,6 +148,7 @@ module Synchrony
     def visitUnary unary,args=nil
       op=OP_STR[unary.op]||unary.op
       expr=unary.expr.accept(self)
+      return "!#{expr}" if op==:not
       "(#{op} #{expr})"
     end
 
@@ -204,6 +205,12 @@ module Synchrony
     def visitParenth parenth,args=nil
       e=parenth.expr.accept(self)
       "(#{e})"
+    end
+
+    def visitConcat concat,args=nil
+      exprs=concat.exprs.map{|e| e.accept(self)}
+      exprs=exprs.join(",")
+      "{#{exprs}}"
     end
 
     def visitIntLit intlit,args=nil

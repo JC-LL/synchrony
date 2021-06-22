@@ -203,6 +203,11 @@ module Synchrony
       Parenth.new(e)
     end
 
+    def visitConcat concat,args=nil
+      exprs=concat.exprs.map{|e| e.accept(self)}
+      Concat.new(exprs)
+    end
+
     def visitIntLit intlit,args=nil
       tok=intlit.tok.accept(self)
       IntLit.new(tok)

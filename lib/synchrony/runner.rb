@@ -60,6 +60,10 @@ module Synchrony
         options[:check] = true
       end
 
+      parser.on("--simplify", "apply basic boolean simplifications") do
+        options[:simplify] = true
+      end
+
       parser.on("--draw_ast", "draw abstract syntax tree (AST)") do
         options[:draw_ast] = true
       end

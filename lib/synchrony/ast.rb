@@ -232,7 +232,17 @@ module Synchrony
     end
   end
 
-  class IntLit < AstNode
+  class Concat < AstNode
+    attr_accessor :exprs
+    def initialize exprs=[]
+      @exprs=exprs
+    end
+  end
+
+  class Lit < AstNode
+  end
+
+  class IntLit < Lit
     attr_accessor :tok
     def initialize tok=nil
       @tok=tok
