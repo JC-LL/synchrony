@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+
+require_relative '../lib/synchrony'
+Synchrony::Runner.run(*ARGV)

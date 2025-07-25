@@ -1,0 +1,58 @@
+'scopeName': 'source.synchrony'
+'name': 'Synchrony'
+'fileTypes': ['syc']
+'patterns': [
+  {
+    'match': '\\b(import)\\b'
+    'name': 'keyword.import.synchrony'
+  }
+  {
+    'match': '\\b(circuit|end)\\b'
+    'name': 'keyword.structure.synchrony'
+  }
+  {
+    'match': '\\b(input|output)\\b'
+    'name': 'keyword.io.synchrony'
+  }
+  {
+    'match': '\\b(wire)\\b'
+    'name': 'keyword.wire.synchrony'
+  }
+  {
+    'match': '\\b(instance)\\b'
+    'name': 'keyword.instance.synchrony'
+  }
+  {
+    'match': '\\b(bit|bits|int|uint)\\b'
+    'name': 'keyword.types.synchrony'
+  }
+  {
+    'match': '\\b(if|else|for|while|return|function)\\b'
+    'name': 'keyword.control.synchrony'
+  }
+  {
+    'match': '\\b(and|or|not|xor)\\b'
+    'name': 'keyword.boolean-operator.synchrony'
+  }
+  {
+    'match': '\\b(\+|\*|\/|\-)\\b'
+    'name': 'keyword.arith-operator.synchrony'
+  }
+  {
+    'match': '\\b(true|false|null)\\b'
+    'name': 'constant.language.synchrony'
+  }
+  {
+    'match': '\\b([0-9]+)\\b'
+    'name': 'constant.numeric.synchrony'
+  }
+  {
+    'begin': '"'
+    'end': '"'
+    'name': 'string.quoted.double.synchrony'
+  }
+  {
+    'match': '\#(.*)$'
+    'name': 'comment.line.synchrony'
+  }
+]

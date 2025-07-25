@@ -1,0 +1,21 @@
+{
+  "name": "language-synchrony",
+  "version": "0.1.0",
+  "description": "Coloration syntaxique pour Synchrony.",
+  "engines": {
+    "pulsar": ">=1.0.0 <2.0.0"
+  },
+  "keywords": [
+    "language",
+    "grammar",
+    "Synchrony"
+  ],
+  "repository": "https://github.com/jc-ll/synchrony",
+  "license": "MIT",
+  "grammars": [
+    {
+      "scopeName": "source.Synchrony",
+      "path": "./grammars/synchrony.json"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+require "colorize"
+require "sxp"
+require "optparse"
+
+require_relative "./synchrony/version"
+require_relative "./synchrony/lexer"
+require_relative "./synchrony/ast"
+require_relative "./synchrony/parser"
+require_relative "./synchrony/compiler"
+require_relative "./synchrony/runner"

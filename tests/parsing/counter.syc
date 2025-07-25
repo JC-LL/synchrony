@@ -1,0 +1,25 @@
+require "tutu"
+
+circuit counter
+  input e : bit
+  output bit_5 : bit
+  output field_6_2 : bits(5)
+#.........................
+  output field_7_0 : bits(8)
+
+  wire count             : uint(8) init 0
+  wire field_15_0        : bits(16)
+  wire field_15_0_signed : int(8)
+  wire field_3_2         : bits(2)
+  wire int8              : int(8)
+
+  # means DFF !
+  count <| e==1 ? (count + 1) : count
+
+  bit_5               = count[5]
+  field_6_2           = count[6:2]
+  field_7_0           = count[7] & count[6:2] & count[1:0]
+  field_15_0          = resize(field_7_0,16)
+  field_15_0_signed   = signed(field_15_0)
+  field_15_0_unsigned = unsigned(field_15_0)
+end

@@ -1,0 +1,22 @@
+require "ha"
+
+circuit fa
+  input  a,b, cin : bit
+  output sum,cout : bit
+
+  wire w1 : bit
+
+  instance ha1 : ha
+  instance ha2 : ha
+
+  # pointed notation :
+  ha1.a = a
+  ha1.b = b
+  s1 = ha1.sum
+  c1 = ha1.carry
+
+  # positional notation
+  map ha2(s1,c,sum,c2)
+
+  cout = c1 or c2
+end
