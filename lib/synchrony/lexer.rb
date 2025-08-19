@@ -57,6 +57,8 @@ module Synchrony
             token=Token.new(:uint,$&,pos)
           when /^or\b/
             token=Token.new(:or,"or",pos)
+          when /^not\b/
+            token=Token.new(:or,"not",pos)
           when /^and\b/
             token=Token.new(:and,"and",pos)
           when /^xor\b/
@@ -81,6 +83,8 @@ module Synchrony
             token=Token.new(:comma,",",pos)
           when /^\=\=/
             token=Token.new(:eqeq,"==",pos)
+          when /^\!\=/
+            token=Token.new(:neq,"!=",pos)
           when /^\=/
             token=Token.new(:assign,"=",pos)
           when /^\<\~/
@@ -91,8 +95,8 @@ module Synchrony
             token=Token.new(:colon,":",pos)
           when /^\?/
             token=Token.new(:qmark,"?",pos)
-          when /^\&/
-            token=Token.new(:ampersand,"&",pos)
+          when /^\~/
+            token=Token.new(:tilde,"~",pos)
           when /^\(/
             token=Token.new(:lparen,"(",pos)
           when /^\)/
@@ -101,7 +105,7 @@ module Synchrony
             token=Token.new(:lbracket,"[",pos)
           when /^\]/
             token=Token.new(:rbracket,"]",pos)
-          when /^\d+/
+          when /^(0[bh])?\d+/
             token=Token.new(:int_lit,$&,pos)
           when /^\"(.*)\"/
             token=Token.new(:str_lit,$&,pos)

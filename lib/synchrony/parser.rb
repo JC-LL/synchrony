@@ -31,6 +31,7 @@ module Synchrony
     end
 
     def parse filename
+      puts "parsing '#{filename}'"
       lex(filename)
       remove_comments
       root=Root.new
@@ -46,22 +47,22 @@ module Synchrony
           raise "parsing error at #{pos} : expecting either 'require' or 'circuit'"
         end
       end
-      pp root
+      root
     end
 
     def parse_require
-      puts "parsing require"
+      #puts "parsing require"
       expect :require
       lit=StrLit.new(expect(:str_lit))
       Require.new(lit)
     end
 
     def parse_circuit
-      puts "parsing circuit"
+      #puts "parsing circuit"
       circ=Circuit.new
       expect :circuit
       circ.name=Ident.new(expect(:ident))
-      pp decls=parse_declarations()
+      decls=parse_declarations()
       circ.inputs    = decls.select{|decl| decl.is_a?(Synchrony::Input)}
       circ.outputs   = decls.select{|decl| decl.is_a?(Synchrony::Output)}
       circ.wires     = decls.select{|decl| decl.is_a?(Synchrony::Wire)}
@@ -72,7 +73,7 @@ module Synchrony
     end
 
     def parse_declarations
-      puts "parsing parse_declarations"
+      #puts "parsing parse_declarations"
       decls=[]
       while [:input,:output,:wire,:instance].include?(showNext.type)
         case showNext.type
@@ -115,6 +116,8 @@ module Synchrony
           init=IntLit.new(expect :int_lit)
           ret.each{|sig| sig.init=init}
         end
+      else
+        ret.each{|sig| sig.type=Bit.new}
       end
       ret
     end
@@ -132,7 +135,8 @@ module Synchrony
     end
 
     TYPE_h={
-      :bits => Synchrony::Bit,
+      :bit  => Synchrony::Bit,
+      :bits => Synchrony::Bits,
       :uint => Synchrony::Uint,
       :int  => Synchrony::Int,
     }
@@ -179,7 +183,7 @@ module Synchrony
     end
 
     def parse_body
-      puts "parsing body"
+      #puts "parsing body"
       body=Body.new
       while !showNext.is_a? :end
         case showNext.type
@@ -236,7 +240,24 @@ module Synchrony
 
     def parse_expression
       #puts "parse_expression"
-      parse_cmp
+      ret=parse_cmp
+      # conditional expression
+      while [:qmark,:tilde].include?(showNext.type)
+        case showNext.type
+        when :qmark
+          ret=CondExpr.new(ret) #ret should be a Binary comparison
+          acceptIt
+          ret.lhs=parse_expression
+          expect :colon
+          ret.rhs=parse_expression
+
+        when :tilde
+          acceptIt
+          ret=Concat.new(ret)
+          ret.rhs=parse_expression
+        end
+      end
+      ret
     end
 
     COMPARISONS=[:eqeq,:neq,:gt,:gte,:lt,:lte]
@@ -245,7 +266,7 @@ module Synchrony
       if COMPARISONS.include?(showNext.type)
         op=acceptIt
         e2=parse_or
-        e1=Binary.new(e1,op.type,e2)
+        e1=Binary.new(e1,op,e2)
       end
       return e1
     end
@@ -253,9 +274,9 @@ module Synchrony
     def parse_or
       e1=parse_xor
       while showNext.is_a? :or
-        acceptIt
+        op=acceptIt
         e2=parse_xor()
-        e1=Binary.new(e1,:or,e2)
+        e1=Binary.new(e1,op,e2)
       end
       e1
     end
@@ -263,9 +284,9 @@ module Synchrony
     def parse_xor
       e1=parse_and
       while showNext.is_a? :xor
-        acceptIt
+        op=acceptIt
         e2=parse_and()
-        e1=Binary.new(e1,:xor,e2)
+        e1=Binary.new(e1,op,e2)
       end
       e1
     end
@@ -273,9 +294,9 @@ module Synchrony
     def parse_and
       e1=parse_shift()
       while showNext.is_a? :and
-        acceptIt
+        op=acceptIt
         e2=parse_shift()
-        e1=Binary.new(e1,:and,e2)
+        e1=Binary.new(e1,op,e2)
       end
       e1
     end
@@ -285,7 +306,7 @@ module Synchrony
       while showNext.is_a? [:lshift,:rshift]
         tok=acceptIt
         e2=parse_arith()
-        e1=Binary.new(e1,tok.type,e2,map)
+        e1=Binary.new(e1,tok,e2,map)
       end
       e1
     end
@@ -295,7 +316,7 @@ module Synchrony
       while [:add,:sub].include? showNext.type
         tok=acceptIt
         e2=parse_term()
-        e1=Binary.new(e1,tok.type,e2)
+        e1=Binary.new(e1,tok,e2)
       end
       return e1
     end
@@ -305,7 +326,7 @@ module Synchrony
       while [:mul,:div,:mod].include? showNext.type
         tok=acceptIt
         e2=parse_power()
-        e1=Binary.new(e1,tok.type,e2)
+        e1=Binary.new(e1,tok,e2)
       end
       return e1
     end
@@ -315,7 +336,7 @@ module Synchrony
       while showNext.is_a?(:pow)
         tok=acceptIt
         e2=parse_factor()
-        e1=Binary.new(e1,:pow,e2)
+        e1=Binary.new(e1,tok,e2)
       end
       return e1
     end
@@ -332,7 +353,7 @@ module Synchrony
         end
       when :int_lit
         tok=acceptIt
-        IntLit.new(tok)
+        ret=IntLit.new(tok)
       when :sub,:add
         ret=parse_unary
       when :lparen
@@ -356,25 +377,11 @@ module Synchrony
 
       # bitfield expression
       if showNext.is_a? :lbracket
+        old_ret=ret
         ret=parse_bitfield()
-        ret.expr=ret
+        ret.expr=old_ret
       end
 
-      # conditional expression
-      if showNext.is_a? :qmark
-        ret=CondExpr.new(ret) #ret should be a Binary comparison
-        acceptIt
-        ret.lhs=parse_expression
-        expect :colon
-        ret.rhs=parse_expression
-      end
-
-      # concatenation
-      while showNext.is_a? :ampersand
-        acceptIt
-        ret=Concat.new([ret])
-        ret.elements << parse_expression
-      end
       ret
     end
 
@@ -387,7 +394,7 @@ module Synchrony
     end
 
     def parse_unary
-      if [:add,:sub].include? showNext.type
+      if [:add,:sub,:not].include? showNext.type
         op=acceptIt.type
         e=parse_arith()
         return Unary.new(op,e)
@@ -400,9 +407,11 @@ module Synchrony
       bit_field=BitField.new
       bit_field.range=Synchrony::Range.new
       bit_field.range.lhs=parse_expression
-      while showNext.type==:colon
+      if showNext.type==:colon
         acceptIt
         bit_field.range.rhs=parse_expression
+      else
+        bit_field.range.rhs=bit_field.range.lhs
       end
       expect :rbracket
       bit_field

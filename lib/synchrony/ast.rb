@@ -1,6 +1,15 @@
 module Synchrony
 
   class AstNode
+    def accept(visitor, arg=nil)
+       name = self.class.name.split(/::/).last
+       visitor.send("visit#{name}".to_sym, self ,arg) # Metaprograming !
+    end
+
+    def str
+      ppr=PrettyPrinter.new
+      self.accept(ppr)
+    end
   end
 
   class SingleTokenNode < AstNode
@@ -147,7 +156,7 @@ module Synchrony
 
   class Parenth < AstNode
     attr_accessor :expr
-    def initialize oexpr
+    def initialize expr
       @expr=expr
     end
   end
@@ -174,9 +183,9 @@ module Synchrony
   end
 
   class Concat < AstNode
-    attr_accessor :elements
-    def initialize elements=[]
-      @elements=elements
+    attr_accessor :lhs,:rhs
+    def initialize lhs=nil,rhs=nil
+      @lhs,@rhs=lhs,rhs
     end
   end
 

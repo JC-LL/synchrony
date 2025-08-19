@@ -1,0 +1,23 @@
+require "ha"
+
+circuit Test
+  input  a,b,c
+  output f0,f1,f2
+  output f3,f4 : bits(3)
+  output f5 : bits(4)
+  output f6,f7,f8
+
+  wire   w1 : bits(2)
+
+  instance ha1 : ha
+
+  f0 = a==1 ? b : c
+  f1 = (a or b) and c
+  f2 = (a==1 ? b : c) xor (a or b)
+  f3 = a ~ b ~ c #concat
+  w1 = a ~ b
+  f4 = w1[1:0] ~ c
+  f5 = f4==0b11 ? 0b1111 : 0b0000
+  map ha1 (a or b, b xor c, f6, f7)
+
+end
