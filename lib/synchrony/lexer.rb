@@ -72,13 +72,13 @@ module Synchrony
           when /^\./
             token=Token.new(:dot,"dot",pos)
           when /^\+/
-            token=Token.new(:add,"add",pos)
+            token=Token.new(:add,"+",pos)
           when /^\-/
-            token=Token.new(:sub,"sub",pos)
+            token=Token.new(:sub,"-",pos)
           when /^\*/
-            token=Token.new(:mul,"mul",pos)
+            token=Token.new(:mul,"*",pos)
           when /^\//
-            token=Token.new(:div,"div",pos)
+            token=Token.new(:div,"/",pos)
           when /^\,/
             token=Token.new(:comma,",",pos)
           when /^\=\=/

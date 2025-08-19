@@ -47,6 +47,7 @@ module Synchrony
           raise "parsing error at #{pos} : expecting either 'require' or 'circuit'"
         end
       end
+      pp root
       root
     end
 
@@ -395,7 +396,7 @@ module Synchrony
 
     def parse_unary
       if [:add,:sub,:not].include? showNext.type
-        op=acceptIt.type
+        op=acceptIt
         e=parse_arith()
         return Unary.new(op,e)
       end
