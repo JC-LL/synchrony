@@ -1,0 +1,25 @@
+circuit C1
+  input a,a : bit       # ERROR duplicate
+  output f : bit
+  f = c                 # ERROR unknown identifier 'c'
+end
+
+circuit C1              # ERROR duplicate
+  input a,b : bit
+  input f : bit
+  input f2 : bit init 0 # ERROR illegal
+  wire  b : bit         # ERROR duplicate
+end
+
+circuit C2
+  input a,b : bit
+  output f1 : bit
+  output f2 : bits(2)
+  output f3 : uint(2)
+
+  f1 <~ a or b
+  f2 <~ a ~ b
+  f3 <~ a ~ b # ERROR : type mismatch uint(2) vs bits(2)
+end
+
+require "ha"

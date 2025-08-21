@@ -108,7 +108,7 @@ module Synchrony
           when /^(0[bh])?\d+/
             token=Token.new(:int_lit,$&,pos)
           when /^\"(.*)\"/
-            token=Token.new(:str_lit,$&,pos)
+            token=Token.new(:str_lit,$1,pos)
           when /^\=\=/
             token=Token.new(:eq,"==",pos)
           when /^\!\=/

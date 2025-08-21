@@ -2,6 +2,7 @@ module Synchrony
   class Runner
 
     def self.run *arguments
+      $pwd=Dir.pwd
       new.run(arguments)
     end
 

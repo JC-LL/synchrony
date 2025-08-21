@@ -17,6 +17,9 @@ module Synchrony
     def initialize tok
       @tok=tok
     end
+    def pos
+      @tok.pos
+    end
   end
 
   class Root < AstNode
@@ -31,16 +34,24 @@ module Synchrony
   end
   #========================
   class Require < AstNode
-    attr_accessor :circuit_name
-    def initialize circuit_name
-      @circuit_name=circuit_name
+    attr_accessor :filename
+    def initialize filename
+      @filename=filename
     end
   end
   #========================
   class Circuit < AstNode
-    attr_accessor :name,:inputs,:outputs,:wires,:instances,:body
-    def initialize name=nil,inputs=[],outputs=[],wires=[],instances=[],body=nil
-      @name,@inputs,@outputs,@body=name,inputs,outputs,instances,body
+    attr_accessor :name,:ports,:wires,:instances,:body
+    def initialize name=nil,ports=[],wires=[],instances=[],body=nil
+      @name,@ports,@body=name,ports,instances,body
+    end
+
+    def inputs
+      @inputs||=@ports.select{|port| port.instance_of?(Synchrony::Input)}
+    end
+
+    def outputs
+      @outputs||=@ports.select{|port| port.instance_of?(Synchrony::Output)}
     end
   end
   #========================
@@ -117,6 +128,7 @@ module Synchrony
 
   #========================
   class Ident < SingleTokenNode
+    attr_accessor :ref # for contextual analysis / name resolution
   end
 
   class IntLit < SingleTokenNode

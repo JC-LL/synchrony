@@ -31,7 +31,6 @@ module Synchrony
     end
 
     def parse filename
-      puts "parsing '#{filename}'"
       lex(filename)
       remove_comments
       root=Root.new
@@ -47,7 +46,6 @@ module Synchrony
           raise "parsing error at #{pos} : expecting either 'require' or 'circuit'"
         end
       end
-      pp root
       root
     end
 
@@ -64,8 +62,8 @@ module Synchrony
       expect :circuit
       circ.name=Ident.new(expect(:ident))
       decls=parse_declarations()
-      circ.inputs    = decls.select{|decl| decl.is_a?(Synchrony::Input)}
-      circ.outputs   = decls.select{|decl| decl.is_a?(Synchrony::Output)}
+      # we need to retain the order of apparition of Inputs/Outputs for mapping calls.
+      circ.ports     = decls.select{|decl| decl.is_a?(Synchrony::Input) or decl.is_a?(Synchrony::Output)}
       circ.wires     = decls.select{|decl| decl.is_a?(Synchrony::Wire)}
       circ.instances = decls.select{|decl| decl.is_a?(Synchrony::Instance)}
       circ.body      = parse_body()

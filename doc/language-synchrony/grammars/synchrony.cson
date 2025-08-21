@@ -27,7 +27,7 @@
     'name': 'keyword.init.synchrony'
   }
   {
-    'match': '\\b(instance)\\b'
+    'match': '\\b(instance|map)\\b'
     'name': 'keyword.instance.synchrony'
   }
   {

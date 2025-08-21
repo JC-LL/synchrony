@@ -3,19 +3,22 @@ module Synchrony
   class PrettyPrinter < Visitor
 
     def print ast,args=nil
-      puts "pretty printing ast"
       code=ast.accept(self,args)
-      puts code.finalize
+      code.finalize
+      code.save_as "pretty_printer.syc"
     end
 
     def visitRoot(root,args=nil)
       code=Code.new
-      root.elements.each{|e| code << e.accept(self,args)}
+      root.elements.each do |e|
+        code << e.accept(self,args)
+        code.newline
+      end
       code
     end
 
     def visitRequire(req,args=nil)
-      name=req.circuit_name.accept(self,args)
+      name=req.filename.accept(self,args)
       "require #{name}"
     end
 
@@ -24,8 +27,7 @@ module Synchrony
       name=circuit.name.accept(self,args)
       code << "circuit #{name}"
       code.indent=2
-      circuit.inputs.each{|input|       code << input.accept(self,args)}
-      circuit.outputs.each{|output|     code << output.accept(self,args)}
+      circuit.ports.each{|port|       code << port.accept(self,args)}
       circuit.wires.each{|wire|         code << wire.accept(self,args)}
       circuit.instances.each{|instance| code << instance.accept(self,args)}
       code << circuit.body.accept(self,args)

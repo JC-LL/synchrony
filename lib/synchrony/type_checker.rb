@@ -1,8 +1,8 @@
 module Synchrony
 
-  class Visitor
-    include InfoDisplay
-    def visit ast,args=nil
+  class TypeChecker < Visitor
+
+    def check ast,args=nil
       ast.accept(self,args)
     end
 
@@ -17,20 +17,17 @@ module Synchrony
     end
 
     def visitCircuit(circuit,args=nil)
-      circuit.name.accept(self,args)
+      info 1,"checking circuit #{circuit.name.str}"
       circuit.inputs.each{|input| input.accept(self,args)}
       circuit.outputs.each{|output| output.accept(self,args)}
       circuit.wires.each{|wire| wire.accept(self,args)}
       circuit.instances.each{|instance| instance.accept(self,args)}
       circuit.body.accept(self,args)
-      circuit
     end
 
     def visitSig(sig,args=nil)
-      sig.name.accept(self,args)
       sig.type.accept(self,args)
       sig.init.accept(self,args) if sig.init
-      sig
     end
 
     def visitInput(input,args=nil)
@@ -46,19 +43,23 @@ module Synchrony
     end
 
     def visitType(type,args=nil)
-      type.accept(self)
+      type.accept(self) #returns a str
     end
 
     def visitBit(bit,args=nil)
+      bit.str
     end
 
     def visitBits(bits,args=nil)
+      bits.str
     end
 
     def visitInt(int,args=nil)
+      int.str
     end
 
     def visitUint(uint,args=nil)
+      uint.str
     end
 
     def visitInstance(instance,args=nil)
@@ -76,7 +77,7 @@ module Synchrony
 
     def visitAssign(assign,args=nil)
       assign.lhs.accept(self,args)
-      assign.rhs.accept(self,args)
+      type=visitExpr(assign.rhs)
     end
 
     def visitCombAssign(comb_assign,args=nil)
@@ -90,7 +91,7 @@ module Synchrony
     end
 
     def visitIdent(ident,args=nil)
-      ident.tok.val
+      ident
     end
 
     def visitIntLit(int_lit,args=nil)
@@ -99,6 +100,10 @@ module Synchrony
 
     def visitStrLit(str_lit,args=nil)
       str_lit.tok.val
+    end
+
+    def visitExpr expr, args=nil
+      expr.accept(self,args)
     end
 
     def visitCondExpr(cond_expr,args=nil)

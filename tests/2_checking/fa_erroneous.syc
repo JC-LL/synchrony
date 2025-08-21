@@ -1,0 +1,42 @@
+require "ha_non_existant" # ERROR : unknown file
+require "ha"
+
+circuit fa
+  input  a,b, cin : bit
+  output sum,cout : bit
+
+  wire s1,c1,c2 : bit
+  wire w1 : bit
+  wire w2 : bit
+
+  instance ha1 : ha
+  instance ha2 : ha
+  instance ha2 : ha         # ERROR : duplicate identifier 'ha2'
+  instance ha3 : ha
+  instance ha4 : ha_fantome # ERROR : unknown circuit model 'ha_fantome'
+
+  # pointed notation
+  ha42.a = a                # ERROR : unknown instance ha3
+  ha1.a = a
+  ha1.b = b
+  ha1.c = b                 # ERROR : not port named 'c' in ha1 (instance of ha)
+  ha1.sum = a               # ERROR : 'ha1.sum' is an instance output. Cannot assign it.
+  s1 = ha1.sum
+  c1 = ha1.carry
+  w2 = ha1.a                # ERROR : 'ha1.a' is an instance input. Cannot read it.
+
+  # positional notation
+  map ha2(s1,c1,sum,c2)
+
+  map ha4(s1,c1,sum,c2)     # ERROR : in 'map ha4(s1,c1,sum,c2,w2)'. Unknown instance 'ha4'.
+
+  map ha3(s1,c1,sum,c2,w2)  # ERROR : too many arguments for the mapping (4 required. Got 5).
+
+  map ha2(1,0,sum,c2)       # ERROR : 'ha2' already mapped previously.
+
+  map ha2(sum,0,a,0)        # ERROR : argument n°1 should be one of input,wire,literal,expression.
+                            # ERROR : argument n°3 should be one of wire,output. Actual is input
+                            # ERROR : argument n°4 should be one of wire,output. Actual is literal
+
+  cout = c1 or c2
+end

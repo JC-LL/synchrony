@@ -1,0 +1,8 @@
+# 1-bit half adder
+circuit ha
+  input a,b
+  output sum,carry
+
+  sum   <~ a xor b
+  carry <~ a and b
+end
