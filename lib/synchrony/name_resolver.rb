@@ -19,7 +19,7 @@ module Synchrony
     # find probable line/column
     # recursive descent from node to instance variables.
     def get_position node, depth=0
-      puts " "*depth+"- visiting '#{node.str}'"
+      #puts " "*depth+"- visiting '#{node.str}'"
       node.instance_variables.each do |var_symb|
         ivar=node.instance_variable_get(var_symb)
         if ivar.respond_to?(:pos)
@@ -31,11 +31,11 @@ module Synchrony
     end
 
     def error_unknown_identifier ident
-      puts "ERROR at #{ident.pos}: unknown identifier '#{ident.str}'"
+      puts "ERROR at #{ident.pos} : unknown identifier '#{ident.str}'"
     end
 
     def error_duplicate str,pos
-      puts "ERROR at #{pos}: duplicate identifier '#{str}'"
+      puts "ERROR at #{pos} : duplicate identifier '#{str}'"
     end
 
     def error_illegal_input_init input
@@ -91,7 +91,7 @@ module Synchrony
     def error_already_mapped map
       ha_str=map.call.name.str
       pos=get_position(map)
-      pos=" at #{pos}"
+      pos="at #{pos}"
       puts "ERROR #{pos} : '#{ha_str}' already mapped."
     end
 

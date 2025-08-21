@@ -5,7 +5,7 @@ module Synchrony
     attr_accessor :options
 
     def compile filename
-      $pwd=Dir.pwd
+
       parse filename
       visit
       pretty_print
@@ -37,5 +37,6 @@ module Synchrony
       info 0, "type checking"
       TypeChecker.new.check(@ast)
     end
+
   end
 end
