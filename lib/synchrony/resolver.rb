@@ -1,14 +1,47 @@
 module Synchrony
 
-  class NameResolver < Visitor
+  class Resolver < Visitor
 
+    attr_reader :nb_errors
     #================================================
     def resolve ast,args=nil
       @symtable=Symtable.new
+      @nb_errors=0
+      set_instrinsinc_funcs()
       ast.accept(self,args)
     end
+    #================================================
+    # Intrinsic functions are declared here.
+    # The type system is :
+    #        ___  bit
+    #       /
+    # bits  ____  signed
+    #       \___  unsigned
+    #
+    #================================================
+    # when a function is called like resize(x,32)
+    # the type checker must :
+    # - get the declared type of x. lets say unsigned(16)
+    # - verify that unsigned exists
+    # - verify that 1st arg unsigned(16) inherits Bits(:unknown)
+    # - verify that 2nd arg 32 (IntLit) has type Integer.
+    # - in the case of RESIZE precisely, generate exact return type Unsigned(32)
+    # - return type Unsigned(32)
+    #================================================
+    def set_instrinsinc_funcs
+      info 1,"declaring intrinsic functions"
+      funcs={}
+      funcs["resize"]   = Func.create("resize"  ,{"arg" => Bits.new,"val" => Uint.new}, return_type=Bits.new)
+      funcs["signed"]   = Func.create("signed"  ,{"arg" => Bits.new}, return_type=Bits.new)
+      funcs["unsigned"] = Func.create("unsigned",{"arg" => Bits.new}, return_type=Bits.new)
+      funcs.each do |name,func|
+        info 2,"func #{name}"
+        func.is_intrinsic=true
+        try_set name,func
+      end
+    end
 
-    def try_set str,obj,pos
+    def try_set str,obj,pos=[:na,:na]
       if @symtable.get(str)
         error_duplicate(str,pos)
       else
@@ -16,41 +49,32 @@ module Synchrony
       end
     end
 
-    # find probable line/column
-    # recursive descent from node to instance variables.
-    def get_position node, depth=0
-      #puts " "*depth+"- visiting '#{node.str}'"
-      node.instance_variables.each do |var_symb|
-        ivar=node.instance_variable_get(var_symb)
-        if ivar.respond_to?(:pos)
-          return ivar.pos
-        else
-          return get_position(ivar,depth+1)
-        end
-      end
-    end
-
     def error_unknown_identifier ident
-      puts "ERROR at #{ident.pos} : unknown identifier '#{ident.str}'"
+      info 2,"ERROR at #{ident.pos} : unknown identifier '#{ident.str}'"
+      @nb_errors+=1
     end
 
     def error_duplicate str,pos
-      puts "ERROR at #{pos} : duplicate identifier '#{str}'"
+      info 2,"ERROR at #{pos} : duplicate identifier '#{str}'"
+      @nb_errors+=1
     end
 
     def error_illegal_input_init input
       pos=input.init.tok.pos
-      puts "ERROR at #{pos} : illegal init of input"
+      info 2,"ERROR at #{pos} : illegal init of input"
+      @nb_errors+=1
     end
 
     def error_illegal_assignee assign
-      puts "ERROR at #{pos} : illegal assignment. Left-hand side assignee must be an input or wire."
+      info 2,"ERROR at #{pos} : illegal assignment '#{assign.str}'. Left-hand side assignee must be an input or wire."
+      @nb_errors+=1
     end
 
     def error_erroneous_require req
       pos=req.filename.pos
       filename=req.filename.str
-      puts "ERROR at #{pos} : erroneous require. File '#{filename}' not found."
+      info 2,"ERROR at #{pos} : erroneous require. File '#{filename}' not found."
+      @nb_errors+=1
     end
 
     def error_port_named_not_found_in_instance_of dot_expr,model
@@ -58,19 +82,22 @@ module Synchrony
       instance_name=dot_expr.lhs.str
       pos=get_position(dot_expr)
       pos="at #{pos}" if pos
-      puts "ERROR #{pos} : in '#{dot_expr.str}'. No port named '#{port_name}' in '#{instance_name}' (instance of '#{model.name.str}')"
+      info 2,"ERROR #{pos} : in '#{dot_expr.str}'. No port named '#{port_name}' in '#{instance_name}' (instance of '#{model.name.str}')"
+      @nb_errors+=1
     end
 
     def error_dot_expr_input_cannot_be_assigned assign,dot_expr
       pos=get_position(assign)
       pos="at #{pos}" if pos
-      puts "ERROR #{pos} : in assignment. '#{dot_expr.str}' is an instance input. It cannot be read."
+      info 2,"ERROR #{pos} : in assignment '#{assign.str}'. '#{dot_expr.str}' is an instance input. It cannot be read."
+      @nb_errors+=1
     end
 
     def error_dot_expr_output_cannot_be_assigned assign,dot_expr
       pos=get_position(assign)
       pos="at #{pos}" if pos
-      puts "ERROR #{pos} : in assignment. '#{dot_expr.str}' is an instance output. It cannot be written."
+      info 2,"ERROR #{pos} : in assignment '#{assign.str}'. '#{dot_expr.str}' is an instance output. It cannot be written."
+      @nb_errors+=1
     end
 
     def error_instance_not_found map
@@ -78,28 +105,40 @@ module Synchrony
       mapping=map.str.size < 30 ? map.str : map.str[0..30]+"...)"
       pos=get_position(map)
       pos="at #{pos}" if pos
-      puts "ERROR #{pos} : in '#{mapping}'. Unknown instance '#{instance_name}'."
+      info 2,"ERROR #{pos} : in '#{mapping}'. Unknown instance '#{instance_name}'."
+      @nb_errors+=1
+    end
+
+    def error_instance_model_not_found instance
+      model=instance.model
+      pos=get_position(instance)
+      pos="at #{pos}" if pos
+      info 2,"ERROR #{pos} : in instance declaration. Unknown model '#{model.str}'."
+      @nb_errors+=1
     end
 
     def error_wrong_number_of_arguments_for_mapping map,expected_number
       mapping=map.str.size < 30 ? map.str : map.str[0..30]+"...)"
       pos=get_position(map)
       pos="at #{pos}" if pos
-      puts "ERROR #{pos} : in '#{mapping}'. Wrong number of arguments (#{expected_number} expected, got #{map.call.args.size})"
+      info 2,"ERROR #{pos} : in '#{mapping}'. Wrong number of arguments (#{expected_number} expected, got #{map.call.args.size})"
+      @nb_errors+=1
     end
 
     def error_already_mapped map
       ha_str=map.call.name.str
       pos=get_position(map)
       pos="at #{pos}"
-      puts "ERROR #{pos} : '#{ha_str}' already mapped."
+      info 2,"ERROR #{pos} : '#{ha_str}' already mapped."
+      @nb_errors+=1
     end
 
     def error_arg_th_should_be map,idx,kinds,actual_kind
       mapping=map.str.size < 30 ? map.str : map.str[0..30]+"...)"
       pos=get_position(map)
       pos="at #{pos}" if pos
-      puts "ERROR #{pos} : in '#{mapping}'. Expected argument n°#{idx+1} should be one of #{kinds.join(',')}. Actual is #{actual_kind}."
+      info 2,"ERROR #{pos} : in '#{mapping}'. Expected argument n°#{idx+1} should be one of #{kinds.join(',')}. Actual is #{actual_kind}."
+      @nb_errors+=1
     end
 
     #================================================
@@ -184,11 +223,18 @@ module Synchrony
       uint.str
     end
 
+    # instance ha1 : ha
     def visitInstance(instance,args=nil)
       str=instance.name.str
       pos=instance.name.pos
       circuit=instance.model.accept(self,args)
-      try_set(str,circuit.clone,pos)
+      if circuit
+        try_set(str,klone=circuit.clone,pos)     # "ha1" -> ha circuit model
+        try_set(circuit.name.str,klone,pos)      # "ha" -> ha circuit model
+      else
+        error_instance_model_not_found(instance)
+        return nil
+      end
     end
 
     def visitBody(body,args=nil)
@@ -258,6 +304,7 @@ module Synchrony
         end
       else
         error_instance_not_found(map)
+        nil
       end
     end
 
@@ -320,6 +367,7 @@ module Synchrony
           ident.ref=obj
         else
           error_unknown_identifier(ident)
+          return nil
         end
       end
     end

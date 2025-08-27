@@ -2,8 +2,23 @@ module Synchrony
 
   class Visitor
     include InfoDisplay
+
     def visit ast,args=nil
       ast.accept(self,args)
+    end
+
+    # find probable line/column
+    # recursive descent from node to instance variables.
+    def get_position node, depth=0
+      #puts " "*depth+"- visiting '#{node.str}'"
+      node.instance_variables.each do |var_symb|
+        ivar=node.instance_variable_get(var_symb)
+        if ivar.respond_to?(:pos)
+          return ivar.pos
+        else
+          return get_position(ivar,depth+1)
+        end
+      end
     end
 
     def visitRoot(root,args=nil)

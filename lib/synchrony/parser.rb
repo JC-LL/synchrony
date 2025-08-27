@@ -415,6 +415,5 @@ module Synchrony
       expect :rbracket
       bit_field
     end
-
   end
 end

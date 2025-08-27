@@ -10,7 +10,9 @@ module Synchrony
       visit
       pretty_print
       name_resolution
-      type_checking
+      if @nb_errors==0
+        type_checking
+      end
     end
 
     def parse filename
@@ -30,7 +32,9 @@ module Synchrony
 
     def name_resolution
       info 0, "name resolution"
-      NameResolver.new.resolve(@ast)
+      resolver=Resolver.new
+      resolver.resolve(@ast)
+      @nb_errors=resolver.nb_errors
     end
 
     def type_checking

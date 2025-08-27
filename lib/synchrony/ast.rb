@@ -70,25 +70,35 @@ module Synchrony
 
   class Wire < Sig
   end
+
+  class Arg < Sig
+  end
   #============================
   class Type < AstNode
     attr_accessor :nb_bits
-    def initialize nb_bits=1
+    def initialize nb_bits=:generic
       @nb_bits=nb_bits
     end
   end
 
-  class Bit < Type
-  end
+  # class Integer < Type
+  # end
 
   class Bits < Type
   end
 
-  class Int < Type
+  class Bit < Bits
+    def initialize
+      super(1)
+    end
   end
 
-  class Uint < Type
+  class Int < Bits
   end
+
+  class Uint < Bits
+  end
+
   #============================
   class Instance < AstNode
     attr_accessor :name,:model
@@ -132,6 +142,32 @@ module Synchrony
   end
 
   class IntLit < SingleTokenNode
+    attr_reader :type
+    def initialize tok
+      super(tok)
+      if tok.val.to_i < 0
+        @type=Int.new(bits_required)
+      else
+        @type=Uint.new(bits_required)
+      end
+    end
+
+    # Pour un entier négatif n < 0 : il faut représenter n dans l’intervalle [−2^(k−1), 2^(k−1)−1].
+    # Donc on cherche le plus petit k tel que n >= -2^(k-1).
+    def bits_required
+      n=self.tok.val.to_i
+      if n >= 0
+        return 1 if n == 0
+        Math.log2(n).floor + 1
+      else
+        k = 1
+        # augmenter k jusqu’à ce que n soit représentable en complément à deux
+        while n < -(2**(k-1))
+          k += 1
+        end
+        k
+      end
+    end
   end
 
   class StrLit < SingleTokenNode
@@ -201,5 +237,28 @@ module Synchrony
     end
   end
 
+#=============================================
+  class Func < AstNode
+    attr_accessor :is_intrinsic
+    attr_accessor :name
+    attr_accessor :args
+    attr_accessor :return_type
+    attr_accessor :body
+    def initialize(name,args=[],return_type=nil,body=nil)
+      @name=name
+      @args=args
+      @return_type=return_type
+      @body=body
+    end
+
+    def self.create name,args,return_type=nil
+      func=Func.new(name.to_ident)
+      args.each do |name_str,type|
+        func.args << Arg.new(name_str.to_ident,type)
+      end
+      func.return_type=return_type
+      func
+    end
+  end
 
 end

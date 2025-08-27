@@ -1,5 +1,23 @@
 module Synchrony
 
+  #================================================
+  # The type system is :
+  #        ___  bit
+  #       /
+  # bits  ____  signed
+  #       \___  unsigned
+  #
+  #================================================
+  # when a function is called like resize(x,32)
+  # the type checker must :
+  # - get the declared type of x. lets say unsigned(16)
+  # - verify that unsigned exists
+  # - verify that 1st arg unsigned(16) inherits Bits(:unknown)
+  # - verify that 2nd arg 32 (IntLit) has type Integer.
+  # - in the case of RESIZE precisely, generate exact return type Unsigned(32)
+  # - return type Unsigned(32)
+  #================================================
+
   class TypeChecker < Visitor
 
     def check ast,args=nil
@@ -63,8 +81,6 @@ module Synchrony
     end
 
     def visitInstance(instance,args=nil)
-      instance.name.accept(self,args)
-      instance.model.accept(self,args)
     end
 
     def visitBody(body,args=nil)
@@ -76,26 +92,29 @@ module Synchrony
     end
 
     def visitAssign(assign,args=nil)
-      assign.lhs.accept(self,args)
-      type=visitExpr(assign.rhs)
+      pos=get_position(assign)
+      type_lhs=assign.lhs.accept(self,args)
+      type_rhs=visitExpr(assign.rhs)
+      unless type_lhs.str==type_rhs.str
+        info 2,"ERROR at #{pos} : left/right types mismatch in '#{assign.str}' : #{type_lhs.str} <- #{type_rhs.str}"
+      end
     end
 
     def visitCombAssign(comb_assign,args=nil)
-      comb_assign.lhs.accept(self,args)
-      comb_assign.rhs.accept(self,args)
+      visitAssign(comb_assign)
     end
 
     def visitSeqAssign(seq_assign,args=nil)
-      seq_assign.lhs.accept(self,args)
-      seq_assign.rhs.accept(self,args)
+      visitAssign(seq_assign)
     end
 
     def visitIdent(ident,args=nil)
-      ident
+      #puts "visiting #{ident.str} at #{get_position(ident)}"
+      ident.ref.type
     end
 
     def visitIntLit(int_lit,args=nil)
-      int_lit.tok.val
+      int_lit.type
     end
 
     def visitStrLit(str_lit,args=nil)
@@ -130,24 +149,91 @@ module Synchrony
       parenth.expr.accept(self,args)
     end
 
+    #================================================
+    # when a function is called like resize(x,32)
+    # the type checker must :
+    # - get the declared type of x. lets say unsigned(16)
+    # - verify that unsigned exists
+    # - verify that 1st arg unsigned(16) inherits Bits(u)
+    # - verify that 2nd arg 32 (IntLit) that has type Uint(6) inherits  Uint(u)
+    # - in the case of RESIZE precisely, generate exact return type Unsigned(32)
+    # - return type Unsigned(32)
+    #================================================
     def visitCall(call,args=nil)
-      call.name.accept(self,args)
-      call.args.each{|arg| arg.accept(self,args)}
+      #info 2,"visiting call '#{call.str}'"
+      func_def=call.name.ref
+      if func_def
+        #info 3, "func definition found"
+        #puts func_def.str
+      end
+      call.args.each_with_index do |actual_arg,idx|
+        arg_type_actual=actual_arg.accept(self,args)
+        #info 3,"arg n°#{idx} #{actual_arg.str}".ljust(20)+":: #{arg_type_actual.str}"
+        arg_type_formal=func_def.args[idx].type
+        if arg_type_actual.is_a?(arg_type_formal.class)
+          if arg_type_formal.nb_bits==:generic or arg_type_actual.nb_bits==arg_type_formal.nb_bits
+            #info 4, "compatible with #{arg_type_formal.str}"
+          else
+            info 4, "ERROR : not compatible with #{arg_type_formal.str}"
+          end
+        end
+      end
+      case func_def.name.str
+      when "resize"
+        nb_bits=call.args[1].str.to_i
+        ret_type=call.args[0].accept(self).clone
+        ret_type.nb_bits=nb_bits
+        return ret_type
+      when "signed"
+        nb_bits=call.args[0].ref.type.nb_bits
+        ret_type=Int.new
+        ret_type.nb_bits=nb_bits
+        return ret_type
+      when "unsigned"
+        nb_bits=call.args[0].ref.type.nb_bits
+        ret_type=Uint.new
+        ret_type.nb_bits=nb_bits
+        return ret_type
+      end
     end
 
+    # - check that access indicated is not out of bounds
+    # - returns the final Bits type with correct number of bits.
     def visitBitField(bit_field,args=nil)
-      bit_field.expr.accept(self,args)
-      bit_field.range.accept(self,args)
+      pos=get_position(bit_field)
+      lhs_type=bit_field.expr.accept(self,args)
+      range=0..lhs_type.nb_bits-1 # mind the counter-intuitive order !!!
+      max=range.max
+      min=range.min
+      l,r=bit_field.range.accept(self,args)
+      if l<0 or r<0
+        info 2, "ERROR at #{pos} : '#{bit_field.str}' bit fields bounds must be natural numbers."
+      end
+      unless range.include?(l) and range.include?(r)
+        info 2, "ERROR at #{pos}: '#{bit_field.str}' trying to access out of bounds #{max}..#{min} of '#{bit_field.expr.str}' declared as #{lhs_type.str} "
+      end
+      nb_bits=l-r+1
+      case nb_bits
+      when 0
+        info 2,"ERROR : #{bitfield.str} amounts to 0 bits."
+      when 1
+        return Bit.new
+      else
+        return Bits.new(nb_bits)
+      end
     end
 
     def visitRange(range,args=nil)
-      range.lhs.accept(self,args)
-      range.rhs.accept(self,args)
+      l=range.lhs.str.to_i
+      r=range.rhs.str.to_i
+      [l,r]
     end
 
     def visitConcat(concat  ,args=nil)
-      concat.lhs.accept(self,args)
-      concat.rhs.accept(self,args)
+      lhs_type=concat.lhs.accept(self,args)
+      rhs_type=concat.rhs.accept(self,args)
+      nb_bits=lhs_type.nb_bits + rhs_type.nb_bits
+      return Bits.new(nb_bits)
     end
   end
 end

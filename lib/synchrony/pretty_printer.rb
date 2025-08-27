@@ -61,6 +61,11 @@ module Synchrony
       "wire #{name} : #{type} #{init}"
     end
 
+    def visitArg(arg,args=nil)
+      name,type,init=visitSig(arg,args)
+      "#{name} : #{type}"
+    end
+
     def visitType(type,args=nil)
       type.accept(self)
     end
@@ -177,6 +182,13 @@ module Synchrony
       lhs=concat.lhs.accept(self,args)
       rhs=concat.rhs.accept(self,args)
       "#{lhs}~#{rhs}"
+    end
+
+    def visitFunc(func,args=nil)
+      code=Code.new
+      args=func.args.map{|arg| arg.accept(self,nil)}
+      code << "func #{func.name.str}(#{args.join(',')})"
+      code
     end
   end
 end
