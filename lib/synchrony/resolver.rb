@@ -230,7 +230,6 @@ module Synchrony
       circuit=instance.model.accept(self,args)
       if circuit
         try_set(str,klone=circuit.clone,pos)     # "ha1" -> ha circuit model
-        try_set(circuit.name.str,klone,pos)      # "ha" -> ha circuit model
       else
         error_instance_model_not_found(instance)
         return nil
@@ -241,14 +240,19 @@ module Synchrony
       body.stmts.each{|stmt| stmt.accept(self,args)}
     end
 
+    #===========================================================================
+    # for Map : do not visit the as map.call.accept(...)
+    #     visitCall is reserved for pure function call.
+    #
     # -check that the number of arguments is correct.
-    # -check that the input arguments are either inputs, wires, literals or binary/unary expressions
+    # -check that the input arguments are either inputs, wires, literals or
+    #                                binary/unary expressions
     # -check that the output arguments are either outputs or wires or open
+    #===========================================================================
     def visitMap(map,args=nil)
-      # map.call.accept(self,args)
+      call_name_str=map.call.name.str
       map.call.args.each{|arg| arg.accept(self,args)}
       #=====
-      call_name_str=map.call.name.str
       @mapped||=[]
       if @mapped.include?(call_name_str)
         error_already_mapped(map)
@@ -258,6 +262,7 @@ module Synchrony
       # find the circuit
       circuit=@symtable.get(call_name_str)
       if circuit
+        map.call.name.ref=circuit
         ports=circuit.ports
         # check that the number of arguments is correct.
         if ports.size!=map.call.args.size
@@ -421,8 +426,20 @@ module Synchrony
       parenth.expr.accept(self,args)
     end
 
+    # visit the name of the call, in order to find the Func called.
+    # Then reference the Func in the call.name.
     def visitCall(call,args=nil)
-      call.name.accept(self,args)
+      obj=call.name.accept(self,args)
+      if obj
+        if obj.is_a?(Func)
+          call.name.ref=obj
+        else
+          info 2,"ERROR at #{pos} : call to '#{call.name.str}', which is not a function."
+        end
+      else
+        pos=get_position(call)
+        info 2,"ERROR at #{pos} : function '#{call.name.str}' not found."
+      end
       call.args.each{|arg| arg.accept(self,args)}
     end
 

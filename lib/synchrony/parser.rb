@@ -207,6 +207,7 @@ module Synchrony
       body
     end
 
+    # mapping is seen as a function call : map f(x,...)
     def parse_mapping
       expect :map
       call=parse_factor
@@ -261,17 +262,17 @@ module Synchrony
 
     COMPARISONS=[:eqeq,:neq,:gt,:gte,:lt,:lte]
     def parse_cmp
-      e1=parse_or
+      e1=parse_or()
       if COMPARISONS.include?(showNext.type)
         op=acceptIt
-        e2=parse_or
+        e2=parse_or()
         e1=Binary.new(e1,op,e2)
       end
       return e1
     end
 
     def parse_or
-      e1=parse_xor
+      e1=parse_xor()
       while showNext.is_a? :or
         op=acceptIt
         e2=parse_xor()
@@ -281,7 +282,7 @@ module Synchrony
     end
 
     def parse_xor
-      e1=parse_and
+      e1=parse_and()
       while showNext.is_a? :xor
         op=acceptIt
         e2=parse_and()
@@ -301,18 +302,18 @@ module Synchrony
     end
 
     def parse_shift
-      e1=parse_arith
-      while showNext.is_a? [:lshift,:rshift]
+      e1=parse_arith()
+      while [:lshift,:rshift].include? showNext.type
         tok=acceptIt
         e2=parse_arith()
-        e1=Binary.new(e1,tok,e2,map)
+        e1=Binary.new(e1,tok,e2)
       end
       e1
     end
 
     def parse_arith
       e1=parse_term()
-      while [:add,:sub].include? showNext.type
+      while [:add,:sub,:addc,:subc].include? showNext.type
         tok=acceptIt
         e2=parse_term()
         e1=Binary.new(e1,tok,e2)
@@ -353,7 +354,7 @@ module Synchrony
       when :int_lit
         tok=acceptIt
         ret=IntLit.new(tok)
-      when :sub,:add
+      when :sub,:add,:not
         ret=parse_unary
       when :lparen
         ret=parse_parenth

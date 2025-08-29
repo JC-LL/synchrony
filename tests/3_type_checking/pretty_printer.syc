@@ -1,0 +1,27 @@
+circuit test
+  input a : bits(8)
+  input b : bits(8)
+  input c : bits(8)
+  input d : int(8)
+  output f1 : bits(8) 
+  output f2 : bits(8) 
+  output f3 : bits(8) 
+  output f4 : bits(8) 
+  output f5 : int(8) 
+  output f5_1 : int(8) 
+  output f5_2 : int(8) 
+  output f6 : bits(8) 
+  output f6_1 : bits(8) 
+  wire w1 : uint(4) 
+  w1 = 12
+  f1 = a + b
+  f2 = a +. b
+  f3 = a * b
+  f4 = resize(a * b,8)
+  f5 = d / w1
+  f5_1 = signed(a) / w1
+  f5_2 = d / signed(w1)
+  f6 = a << 2
+  f6_1 = resize(a << 2,8)
+end
+ 

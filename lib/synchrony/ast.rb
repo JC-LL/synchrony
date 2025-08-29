@@ -168,6 +168,10 @@ module Synchrony
         k
       end
     end
+
+    def to_i
+      tok.val.to_i
+    end
   end
 
   class StrLit < SingleTokenNode

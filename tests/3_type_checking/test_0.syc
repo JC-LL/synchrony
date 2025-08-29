@@ -1,0 +1,26 @@
+circuit Test
+  input a,b,c : bits(8)
+  input d : int(8)
+  output f1,f2,f3,f4 : bits(8)
+  output f5,f5_1,f5_2 : int(8)
+
+  output f6,f6_1 : bits(8)
+
+  wire w1 : uint(4)
+
+  w1 = 12 # 4 bits
+
+  f1 = a + b
+  f2 = a +. b          # ERROR at [5, 8] : type mismatch in 'f2 = a +. b' : bits(8) <- bits(9)
+
+  f3 = a * b           # ERROR : type mismatch in 'f3 = a * b' : bits(8) <- bits(16)
+  f4 = resize(a * b,8) # No error
+
+  f5   = d / w1            # ERROR int / uint
+  f5_1 = signed(a) / w1    # ERROR signed / uint
+  f5_2 = d / signed(w1)    # no error
+
+  f6   = a << 2            # ERROR
+  f6_1 = resize(a << 2,8)
+
+end

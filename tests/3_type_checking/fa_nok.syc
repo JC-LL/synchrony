@@ -4,19 +4,19 @@ circuit fa
   input  a,b, cin : bit
   output sum,cout : bit
 
-  wire w1,s1,c1,c2 : bit
-
+  wire s1,c1,c2 : bit
+  wire s2 : bits(2)
   instance ha1 : ha
   instance ha2 : ha
 
   # pointed notation :
-  ha1.a = a
+  ha1.a = s2 # ERROR at [13, 11] : type mismatch in 'ha1.a = s2' : bit <- bits(2)
   ha1.b = b
   s1 = ha1.sum
   c1 = ha1.carry
 
   # positional notation
-  map ha2(s1,c1,sum,c2)
+  map ha2(s2,c1,sum,c2) # ERROR :
 
   cout = c1 or c2
 end

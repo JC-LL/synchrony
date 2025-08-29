@@ -58,27 +58,33 @@ module Synchrony
           when /^or\b/
             token=Token.new(:or,"or",pos)
           when /^not\b/
-            token=Token.new(:or,"not",pos)
+            token=Token.new(:not,"not",pos)
           when /^and\b/
             token=Token.new(:and,"and",pos)
           when /^xor\b/
             token=Token.new(:xor,"xor",pos)
-          when /^not\b/
-            token=Token.new(:not,"not",pos)
           when /^nor\b/
             token=Token.new(:nor,"nor",pos)
           when /^nand\b/
             token=Token.new(:nand,"nand",pos)
           when /^\./
             token=Token.new(:dot,"dot",pos)
+          when /^\+\./
+            token=Token.new(:addc,"+.",pos) # preserves carry
           when /^\+/
             token=Token.new(:add,"+",pos)
+          when /^\-\./
+            token=Token.new(:subc,"-.",pos) # preserves carry
           when /^\-/
             token=Token.new(:sub,"-",pos)
           when /^\*/
             token=Token.new(:mul,"*",pos)
           when /^\//
             token=Token.new(:div,"/",pos)
+          when /^\<\</
+            token=Token.new(:lshift,"<<",pos)
+          when /^\>\>/
+            token=Token.new(:rshift,">>",pos)
           when /^\,/
             token=Token.new(:comma,",",pos)
           when /^\=\=/
