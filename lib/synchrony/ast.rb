@@ -272,7 +272,7 @@ module Synchrony
   end
 
   class Unary < Expr
-    attr_accessor :expr
+    attr_accessor :op,:expr
 
     def initialize op,expr
       @op,@expr=op,expr

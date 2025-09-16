@@ -98,7 +98,7 @@ module Synchrony
 
     def visitUnary(unary,args=nil)
       port_expr=unary.expr.accept(self,args)
-      @circuit.components << comp=OP_CIRCUIT_H[binary.op.val].new
+      @circuit.components << comp=OP_CIRCUIT_H[unary.op.val].new
       e=comp.get_port_named(:i)
       f=comp.get_port_named(:f)
       port_expr.connect(e)

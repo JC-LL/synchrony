@@ -1,0 +1,16 @@
+
+circuit Draw_3
+  input a,b,c,d,e
+  output f1,f2,f3,f4,f5,f6,f7,f8,f9,f10
+
+  f1 = a and b and c and d and e
+  f2 = (a or b) and (c or d) and e
+  f3 = (a xor b) xor (c xor (d xor e))
+  f4 = ((a and b) or c) and (d or e)
+  f5 = a and (b or (c and (d or e)))
+  f6 = (a == b) and (b == c) and (c == d) and (d == e)
+  f7 = (a or not b) and (b or not c) and (c or not d) and (d or not e)
+  f8 = ((a and b) or (not a and c)) and ((d and e) or (not d and c))
+  f9 = a and (b or (c and (d or (not d and e))))
+  f10 = (a and b) and (c and (d and e))
+end

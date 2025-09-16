@@ -17,17 +17,25 @@ module Synchrony
       dot.newline
 
       dot << "// inputs"
+      dot << "{"
+      dot << "rank=same;"
       circuit.inputs.each do |port|
         pname=port.name.str
         dot << "#{port.object_id} [shape=circle,label=\"#{pname}\", style=filled, fillcolor=\"#cce5ff\"];"
       end
+      dot << "}"
       dot.newline
+
       dot << "// outputs"
+      dot << "{"
+      dot << "rank=same;"
       circuit.outputs.each do |port|
         pname=port.name.str
         dot << "#{port.object_id} [shape=circle,label=\"#{pname}\", style=filled, fillcolor=\"#ffcccc\"];"
       end
+      dot << "}"
       dot.newline
+
       dot << "// wires"
       circuit.wires.each do |port|
         pname=port.name.str

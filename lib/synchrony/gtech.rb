@@ -1,7 +1,7 @@
 module Synchrony
 
   class Gate1 < Circuit
-    def initialize name
+    def initialize name=nil
       super(name)
       self << Input.new(:i)
       self << Output.new(:f)
