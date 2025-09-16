@@ -1,0 +1,12 @@
+circuit draw_1
+  input a : bit
+  input b : bit
+  input c : bit
+  output f1 : bit 
+  output f2 : bit 
+ 
+ 
+  f1 = c == 0 ? (a and (b xor a)) : (a or b)
+  f2 <| (a or (b and c))
+end
+ 

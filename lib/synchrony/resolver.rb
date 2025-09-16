@@ -32,8 +32,9 @@ module Synchrony
       info 1,"declaring intrinsic functions"
       funcs={}
       funcs["resize"]   = Func.create("resize"  ,{"arg" => Bits.new,"val" => Uint.new}, return_type=Bits.new)
-      funcs["signed"]   = Func.create("signed"  ,{"arg" => Bits.new}, return_type=Bits.new)
-      funcs["unsigned"] = Func.create("unsigned",{"arg" => Bits.new}, return_type=Bits.new)
+      funcs["to_int"]   = Func.create("to_int"  ,{"arg" => Bits.new}, return_type=Int.new)
+      funcs["to_uint"]  = Func.create("to_uint" ,{"arg" => Bits.new}, return_type=Uint.new)
+      funcs["to_bits"]  = Func.create("to_bits" ,{"arg" => Bits.new}, return_type=Bits.new)
       funcs.each do |name,func|
         info 2,"func #{name}"
         func.is_intrinsic=true
@@ -118,10 +119,9 @@ module Synchrony
     end
 
     def error_wrong_number_of_arguments_for_mapping map,expected_number
-      mapping=map.str.size < 30 ? map.str : map.str[0..30]+"...)"
       pos=get_position(map)
       pos="at #{pos}" if pos
-      info 2,"ERROR #{pos} : in '#{mapping}'. Wrong number of arguments (#{expected_number} expected, got #{map.call.args.size})"
+      info 2,"ERROR #{pos} : in map. Wrong number of arguments : #{expected_number} expected, got #{map.call.args.size})"
       @nb_errors+=1
     end
 
@@ -415,6 +415,7 @@ module Synchrony
         ports=circuit.inputs+circuit.outputs
         port=ports.find{|port| port.name.str==port_name}
         if port
+          dot_expr.ref=port # fix the reference
           return port
         else
           error_port_named_not_found_in_instance_of(dot_expr,circuit)
@@ -428,17 +429,27 @@ module Synchrony
 
     # visit the name of the call, in order to find the Func called.
     # Then reference the Func in the call.name.
+    # Check that the correct number of arguments is passed during the call.
     def visitCall(call,args=nil)
-      obj=call.name.accept(self,args)
+      pos=call.pos
+      obj=call.name.accept(self)
       if obj
         if obj.is_a?(Func)
           call.name.ref=obj
+          nb_formal_args=obj.args.size
+          nb_actual_args=call.args.size
+          unless nb_formal_args==nb_actual_args
+            info 2, "ERROR at #{pos} : wrong number of arguments passed to '#{call.name.str}'"
+            @nb_errors+=1
+          end
         else
           info 2,"ERROR at #{pos} : call to '#{call.name.str}', which is not a function."
+          @nb_errors+=1
         end
       else
         pos=get_position(call)
         info 2,"ERROR at #{pos} : function '#{call.name.str}' not found."
+        @nb_errors+=1
       end
       call.args.each{|arg| arg.accept(self,args)}
     end

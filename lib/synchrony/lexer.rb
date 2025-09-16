@@ -13,6 +13,10 @@ module Synchrony
     def to_s
       "<#{@type.to_s.ljust(10)},#{@val.ljust(10)},#{pos}>"
     end
+
+    def Token.create_int_lit val
+      Token.new(:int_lit,val.to_s,[:na,:na])
+    end
   end
 
   class Lexer
@@ -39,6 +43,8 @@ module Synchrony
             token=Token.new(:output,"output",pos)
           when /^wire\b/
             token=Token.new(:wire,"wire",pos)
+          when /^const\b/
+            token=Token.new(:const,"const",pos)
           when /^instance\b/
             token=Token.new(:instance,"instance",pos)
           when /^map\b/
@@ -49,9 +55,9 @@ module Synchrony
             token=Token.new(:init,"init",pos)
           when /^bit\b/
             token=Token.new(:bit,"bit",pos)
-          when /^bits\b/
+          when /^bits(\d+)?\b/
             token=Token.new(:bits,"bits",pos)
-          when /^int\b/
+          when /^int(\d+)\b/
             token=Token.new(:int,$&,pos)
           when /^uint(\d+)?\b/
             token=Token.new(:uint,$&,pos)
@@ -111,7 +117,7 @@ module Synchrony
             token=Token.new(:lbracket,"[",pos)
           when /^\]/
             token=Token.new(:rbracket,"]",pos)
-          when /^(0[bh])?\d+/
+          when /^(0[bx])?\d+/
             token=Token.new(:int_lit,$&,pos)
           when /^\"(.*)\"/
             token=Token.new(:str_lit,$1,pos)

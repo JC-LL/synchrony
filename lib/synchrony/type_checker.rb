@@ -116,6 +116,8 @@ module Synchrony
       pos=get_position(assign)
       type_lhs=assign.lhs.accept(self,args)
       type_rhs=visitExpr(assign.rhs)
+      puts "bug" unless type_lhs
+      puts "bug" unless type_rhs
       unless type_lhs.str==type_rhs.str
         info 2,"ERROR at #{pos} : type mismatch in '#{assign.str}' : #{type_lhs.str} <- #{type_rhs.str}"
       end
@@ -138,10 +140,6 @@ module Synchrony
       int_lit.type
     end
 
-    def visitStrLit(str_lit,args=nil)
-      str_lit.tok.val
-    end
-
     def visitExpr expr, args=nil
       expr.accept(self,args)
     end
@@ -153,11 +151,23 @@ module Synchrony
     end
 
     def check_homogeneous(t1,t2,binary)
-      pos=get_position(binary)
+      pos=binary.pos
       if t1.class != t2.class
-        info 2,"ERROR at #{pos} : heterogeneous type kinds not allowed in binary expression '#{binary.str}' :: #{t1.str} #{binary.op.val} #{t2.str}."
-        info 2,"WARNING at #{pos} : due to previous errors, further checks way have nonsense."
-        info 2,"WARNING at #{pos} : fix previous errors before dealing with following."
+        info 2,"ERROR at #{pos} : heterogeneous types not allowed in binary expression '#{binary.str}' :: #{t1.str} #{binary.op.val} #{t2.str}."
+        info 2,"WARNING at #{pos} : due to previous errors, further checks may be nonsense."
+        info 2,"WARNING at #{pos} : prefer fixing previous errors before dealing with the following."
+      end
+    end
+
+    def check_is_arithmetic binary
+      t1=binary.lhs.accept(self)
+      t2=binary.rhs.accept(self)
+      pos=binary.pos
+      unless [Uint,Int].include?(t1.class)
+        info 2,"ERROR at #{pos} : arithmetic error in '#{binary.str}'. '#{binary.lhs.str}' is #{t1.str} but should be Int or Uint."
+      end
+      unless [Uint,Int].include?(t2.class)
+        info 2,"ERROR at #{pos} : arithmetic error in '#{binary.str}'. '#{binary.rhs.str}' is #{t2.str} but should be Int or Uint."
       end
     end
 
@@ -174,15 +184,19 @@ module Synchrony
         ret_type.nb_bits=[n,m].max
       when :addc,:subc # safe version. preserves carry
         check_homogeneous(lhs_type,rhs_type,binary)
+        check_is_arithmetic(binary)
         ret_type.nb_bits=[n,m].max + 1
       when :add,:sub # VHDL-like
         check_homogeneous(lhs_type,rhs_type,binary)
+        check_is_arithmetic(binary)
         ret_type.nb_bits=[n,m].max
       when :mul
         check_homogeneous(lhs_type,rhs_type,binary)
+        check_is_arithmetic(binary)
         ret_type.nb_bits=n + m
       when :div
         check_homogeneous(lhs_type,rhs_type,binary)
+        check_is_arithmetic(binary)
         ret_type.nb_bits=n
       when :lshift
         case rhs=binary.rhs
@@ -248,6 +262,11 @@ module Synchrony
       parenth.expr.accept(self,args)
     end
 
+    def check_is_int_literal arg
+      unless [Uint,Int].include?(arg.type.class)
+        info 2,"ERROR at #{arg.pos} : argument should be a int literal. Actual is #{arg.str}"
+      end
+    end
     #================================================
     # when a function is called like resize(x,32)
     # the type checker must :
@@ -278,20 +297,24 @@ module Synchrony
       # deal with intrinsic functions
       case func_def.name.str
       when "resize"
-        nb_bits=call.args[1].str.to_i
-        ret_type=call.args[0].accept(self).clone
-        ret_type.nb_bits=nb_bits
-        return ret_type
-      when "signed"
-        nb_bits=call.args[0].ref.type.nb_bits
-        ret_type=Int.new
-        ret_type.nb_bits=nb_bits
-        return ret_type
-      when "unsigned"
-        nb_bits=call.args[0].ref.type.nb_bits
-        ret_type=Uint.new
-        ret_type.nb_bits=nb_bits
-        return ret_type
+        type=call.args[0].accept(self).clone
+        type.nb_bits
+        # ensure second argument is a int_literal
+        snd_arg=call.args[1]
+        #check_is_int_literal(snd_arg)
+        nb_bits=snd_arg.str.to_i
+        type.nb_bits=nb_bits
+        return type
+      when "to_int"
+        # reminder : call.args[0].accept(self) ==> type
+        nb_bits=call.args[0].accept(self).nb_bits
+        return Int.new(nb_bits)
+      when "to_uint"
+        nb_bits=call.args[0].accept(self).nb_bits
+        return Uint.new(nb_bits)
+      when "to_bits"
+        nb_bits=call.args[0].accept(self).nb_bits
+        return Bits.new(nb_bits)
       end
     end
 
@@ -308,7 +331,7 @@ module Synchrony
         info 2, "ERROR at #{pos} : '#{bit_field.str}' bit fields bounds must be natural numbers."
       end
       unless range.include?(l) and range.include?(r)
-        info 2, "ERROR at #{pos} : '#{bit_field.str}' trying to access out of bounds #{max}..#{min} of '#{bit_field.expr.str}' declared as #{lhs_type.str} "
+        info 2, "ERROR at #{pos} : '#{bit_field.str}' trying to access out of bounds of '#{bit_field.expr.str}' which is #{lhs_type.str} (bits #{max}..#{min})"
       end
       nb_bits=l-r+1
       case nb_bits

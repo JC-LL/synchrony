@@ -10,6 +10,13 @@ module Synchrony
       ppr=PrettyPrinter.new
       self.accept(ppr)
     end
+
+    # find probable line/column
+    # recursive descent from node to instance variables.
+    def pos
+      visitor=Visitor.new
+      visitor.get_position(self)
+    end
   end
 
   class SingleTokenNode < AstNode
@@ -41,9 +48,16 @@ module Synchrony
   end
   #========================
   class Circuit < AstNode
-    attr_accessor :name,:ports,:wires,:instances,:body
+    @@id=-1
+    attr_accessor :name,:ports,:consts,:wires,:instances,:body
+    attr_accessor :components
+
     def initialize name=nil,ports=[],wires=[],instances=[],body=nil
+      @@id+=1 #risky (using Synchrony "require" : what occurs ?)
+      @id=@@id
+      name||="u#{@id}" #?
       @name,@ports,@body=name,ports,instances,body
+      @components=[]
     end
 
     def inputs
@@ -53,7 +67,23 @@ module Synchrony
     def outputs
       @outputs||=@ports.select{|port| port.instance_of?(Synchrony::Output)}
     end
+
+    def << e
+      case e
+      when Port
+        @ports << e
+        e.component=self
+      when Circuit
+        @instances << e
+      end
+    end
+
+    def get_port_named name
+      @ports.find{|port| port.name.to_s==name.to_s}
+    end
   end
+
+
   #========================
   class Sig < AstNode
     attr_accessor :name,:type,:init
@@ -62,13 +92,39 @@ module Synchrony
     end
   end
 
-  class Input < Sig
+  class Port < Sig
+    attr_accessor :component # for netlist
+    attr_accessor :source,:sinks
+    def initialize name=nil,type=nil
+      super(name,type)
+      @source=nil
+      @sinks=[]
+    end
+
+    def connect sink
+      @sinks << sink unless @sinks.include?(sink)
+      sink.source=self
+    end
+
+    def to_s
+      "#{component.name.to_s}.#{name}"
+    end
   end
 
-  class Output < Sig
+  class Input < Port
   end
 
-  class Wire < Sig
+  class Output < Port
+  end
+
+  class Wire < Port # clever ?
+  end
+
+  class Const < Port # clever ?
+    attr_accessor :name,:type,:expr
+    def initialize(name,type,expr)
+      @name,@type,@expr=name,type,expr
+    end
   end
 
   class Arg < Sig
@@ -139,23 +195,39 @@ module Synchrony
   #========================
   class Ident < SingleTokenNode
     attr_accessor :ref # for contextual analysis / name resolution
+
+    def to_s
+      @tok.val
+    end
   end
 
-  class IntLit < SingleTokenNode
+  class Literal < SingleTokenNode
+    attr_accessor :port
+    def initialize tok
+      super(tok)
+      name=tok.val
+      @port=Port.new(name)
+    end
+  end
+
+  class IntLit < Literal
     attr_reader :type
     def initialize tok
       super(tok)
+      nbits=IntLit.bits_required(self.to_i)
       if tok.val.to_i < 0
-        @type=Int.new(bits_required)
+        @type=Int.new(nbits)
       else
-        @type=Uint.new(bits_required)
+        @type=Uint.new(nbits)
       end
+      @port=Port.new() #========
     end
 
-    # Pour un entier négatif n < 0 : il faut représenter n dans l’intervalle [−2^(k−1), 2^(k−1)−1].
-    # Donc on cherche le plus petit k tel que n >= -2^(k-1).
-    def bits_required
-      n=self.tok.val.to_i
+    def to_i
+      tok.val.to_i
+    end
+
+    def IntLit.bits_required n
       if n >= 0
         return 1 if n == 0
         Math.log2(n).floor + 1
@@ -169,29 +241,34 @@ module Synchrony
       end
     end
 
-    def to_i
-      tok.val.to_i
+    def IntLit.create val
+      tok=Token.create_int_lit(val)
+      IntLit.new(tok)
     end
   end
 
   class StrLit < SingleTokenNode
   end
 
-  class CondExpr < AstNode
+  class Expr < AstNode
+    attr_accessor :type
+  end
+
+  class CondExpr < Expr
     attr_accessor :cond,:lhs,:rhs
     def initialize cond=nil,lhs=nil,rhs=nil
       @cond,@lhs,@rhs=cond,lhs,rhs
     end
   end
 
-  class Binary < AstNode
+  class Binary < Expr
     attr_accessor :lhs,:op,:rhs
     def initialize lhs,op,rhs
       @lhs,@op,@rhs=lhs,op,rhs
     end
   end
 
-  class Unary < AstNode
+  class Unary < Expr
     attr_accessor :expr
 
     def initialize op,expr
@@ -199,28 +276,28 @@ module Synchrony
     end
   end
 
-  class DotExpr < AstNode
+  class DotExpr < Expr
     attr_accessor :lhs,:rhs
     def initialize lhs,rhs
       @lhs,@rhs=lhs,rhs
     end
   end
 
-  class Parenth < AstNode
+  class Parenth < Expr
     attr_accessor :expr
     def initialize expr
       @expr=expr
     end
   end
 
-  class Call < AstNode
+  class Call < Expr
     attr_accessor :name,:args
     def initialize name,args=[]
       @name,@args=name,args
     end
   end
 
-  class BitField < AstNode
+  class BitField < Expr
     attr_accessor :expr,:range
     def initialize expr=nil,range=nil
       @expr,@range=expr,range
@@ -234,7 +311,7 @@ module Synchrony
     end
   end
 
-  class Concat < AstNode
+  class Concat < Expr
     attr_accessor :lhs,:rhs
     def initialize lhs=nil,rhs=nil
       @lhs,@rhs=lhs,rhs

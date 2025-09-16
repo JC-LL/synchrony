@@ -7,12 +7,16 @@ module Synchrony
     def compile filename
 
       parse filename
-      visit
-      pretty_print
-      name_resolution
+      visit()
+      pretty_print()
+      name_resolution()
       if @nb_errors==0
-        type_checking
+        type_checking()
+        constant_propagation()
       end
+      puts pretty_print()
+      elaborate()
+      dot_view()
     end
 
     def parse filename
@@ -40,6 +44,21 @@ module Synchrony
     def type_checking
       info 0, "type checking"
       TypeChecker.new.check(@ast)
+    end
+
+    def constant_propagation
+      info 0, "constant propagation"
+      ConstPropagator.new.propagate(@ast)
+    end
+
+    def elaborate
+      info 0, "elaboration"
+      Elaborator.new.elaborate(@ast)
+    end
+
+    def dot_view
+      info 0, "generating dot view"
+      DotViewer.new.run(@ast)
     end
 
   end

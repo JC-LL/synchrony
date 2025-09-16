@@ -60,8 +60,15 @@ module Synchrony
       visitSig(wire,args)
     end
 
+    def visitConst(const,args=nil)
+      const.name.accept(self,args)
+      const.type.accept(self,args)
+      const.expr.accept(self,args)
+      const
+    end
+
     def visitType(type,args=nil)
-      type.accept(self)
+      type.accept(self,args)
     end
 
     def visitBit(bit,args=nil)
@@ -83,48 +90,55 @@ module Synchrony
 
     def visitBody(body,args=nil)
       body.stmts.each{|stmt| stmt.accept(self,args)}
+      body
     end
 
     def visitMap(map,args=nil)
       map.call.accept(self,args)
+      map
     end
 
     def visitAssign(assign,args=nil)
       assign.lhs.accept(self,args)
       assign.rhs.accept(self,args)
+      assign
     end
 
     def visitCombAssign(comb_assign,args=nil)
       comb_assign.lhs.accept(self,args)
       comb_assign.rhs.accept(self,args)
+      comb_assign
     end
 
     def visitSeqAssign(seq_assign,args=nil)
       seq_assign.lhs.accept(self,args)
       seq_assign.rhs.accept(self,args)
+      seq_assign
     end
 
     def visitIdent(ident,args=nil)
-      ident.tok.val
+      ident
     end
 
     def visitIntLit(int_lit,args=nil)
-      int_lit.tok.val
+      int_lit
     end
 
     def visitStrLit(str_lit,args=nil)
-      str_lit.tok.val
+      str_lit
     end
 
     def visitCondExpr(cond_expr,args=nil)
       cond_expr.cond.accept(self,args)
       cond_expr.lhs.accept(self,args)
       cond_expr.rhs.accept(self,args)
+      cond_expr
     end
 
     def visitBinary(binary,args=nil)
       binary.lhs.accept(self,args)
       binary.rhs.accept(self,args)
+      binary
     end
 
     def visitUnary(unary,args=nil)

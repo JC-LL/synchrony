@@ -57,13 +57,14 @@ module Synchrony
     end
 
     def parse_circuit
-      #puts "parsing circuit"
-      circ=Circuit.new
       expect :circuit
+      circ=Circuit.new
       circ.name=Ident.new(expect(:ident))
       decls=parse_declarations()
-      # we need to retain the order of apparition of Inputs/Outputs for mapping calls.
+      # WARNING ! we need to retain the order of apparition of Inputs/Outputs for mapping calls.
       circ.ports     = decls.select{|decl| decl.is_a?(Synchrony::Input) or decl.is_a?(Synchrony::Output)}
+      circ.ports.each{|port| port.component=circ}
+      circ.consts    = decls.select{|decl| decl.is_a?(Synchrony::Const)}
       circ.wires     = decls.select{|decl| decl.is_a?(Synchrony::Wire)}
       circ.instances = decls.select{|decl| decl.is_a?(Synchrony::Instance)}
       circ.body      = parse_body()
@@ -74,7 +75,7 @@ module Synchrony
     def parse_declarations
       #puts "parsing parse_declarations"
       decls=[]
-      while [:input,:output,:wire,:instance].include?(showNext.type)
+      while [:input,:output,:wire,:const,:instance].include?(showNext.type)
         case showNext.type
         when :input
           decls << parse_input()
@@ -82,6 +83,8 @@ module Synchrony
           decls << parse_output()
         when :wire
           decls << parse_wire()
+        when :const
+          decls << parse_const()
         when :instance
           decls << parse_instance()
         end
@@ -133,6 +136,16 @@ module Synchrony
       parse_sig(:wire)
     end
 
+    def parse_const
+      expect :const
+      name=Ident.new(expect(:ident))
+      expect :colon
+      type=parse_type()
+      expect :assign
+      expr=parse_expression()
+      Const.new(name,type,expr)
+    end
+
     TYPE_h={
       :bit  => Synchrony::Bit,
       :bits => Synchrony::Bits,
@@ -146,7 +159,7 @@ module Synchrony
         acceptIt
         type=Bit.new
       when :bits,:int,:uint
-        acceptIt
+        tok=acceptIt
         type=TYPE_h[kind].new
         if showNext.is_a? :lparen
           expect :lparen
@@ -154,7 +167,8 @@ module Synchrony
           type.nb_bits=tok.val.to_i
           expect :rparen
         else
-          type.nb_bits=32
+          nb_bits=tok.val.scan(/\d+/).first.to_i
+          type.nb_bits=nb_bits
         end
       else
         pos = showNext.pos
@@ -240,7 +254,7 @@ module Synchrony
 
     def parse_expression
       #puts "parse_expression"
-      ret=parse_cmp
+      ret=parse_cmp()
       # conditional expression
       while [:qmark,:tilde].include?(showNext.type)
         case showNext.type

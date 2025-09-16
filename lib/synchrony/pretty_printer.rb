@@ -4,8 +4,14 @@ module Synchrony
 
     def print ast,args=nil
       code=ast.accept(self,args)
-      code.finalize
+      str=code.finalize
       code.save_as "pretty_printer.syc"
+      str
+    end
+
+    def date
+      date = DateTime.now
+      formatted_date = date.strftime("%A %-d %B %Y at %H:%M")
     end
 
     def visitRoot(root,args=nil)
@@ -27,9 +33,12 @@ module Synchrony
       name=circuit.name.accept(self,args)
       code << "circuit #{name}"
       code.indent=2
-      circuit.ports.each{|port|       code << port.accept(self,args)}
+      circuit.ports.each{|port|         code << port.accept(self,args)}
+      code.newline
+      circuit.consts.each{|cnst|        code << cnst.accept(self,args)}
       circuit.wires.each{|wire|         code << wire.accept(self,args)}
       circuit.instances.each{|instance| code << instance.accept(self,args)}
+      code.newline
       code << circuit.body.accept(self,args)
       code.indent=0
       code << "end"
@@ -59,6 +68,13 @@ module Synchrony
     def visitWire(wire,args=nil)
       name,type,init=visitSig(wire,args)
       "wire #{name} : #{type} #{init}"
+    end
+
+    def visitConst(const,args=nil)
+      name=const.name.accept(self,args)
+      type=const.type.accept(self,args)
+      expr=const.expr.accept(self,args)
+      "const #{name.upcase} : #{type} = #{expr}"
     end
 
     def visitArg(arg,args=nil)

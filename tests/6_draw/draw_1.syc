@@ -1,0 +1,6 @@
+circuit Draw_1
+  input a,b,c
+  output f1,f2
+  f1 <~ c==0 ? (a and (b xor a)) : (a or b)
+  f2 <| (a or (b and c))
+end
