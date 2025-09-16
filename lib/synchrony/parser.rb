@@ -66,6 +66,7 @@ module Synchrony
       circ.ports.each{|port| port.component=circ}
       circ.consts    = decls.select{|decl| decl.is_a?(Synchrony::Const)}
       circ.wires     = decls.select{|decl| decl.is_a?(Synchrony::Wire)}
+      circ.wires.each{|wire| wire.component=circ}
       circ.instances = decls.select{|decl| decl.is_a?(Synchrony::Instance)}
       circ.body      = parse_body()
       expect :end

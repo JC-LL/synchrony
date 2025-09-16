@@ -1,0 +1,12 @@
+circuit Draw_2
+  input e
+  output f1
+  output f : uint
+  wire w1
+  wire count : uint
+  w1 = e
+  f1 = w1
+  count <| e == 1 ? (count + 1) : count
+
+  f = count
+end

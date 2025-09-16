@@ -15,7 +15,18 @@ module Synchrony
     end
 
     def visitMap(map,args=nil)
-      map.call.accept(self,args)
+      comp=map.call.name.accept(self) #returns a reference to the instanciated circuit
+      @circuit.components << comp
+      map.call.args.each_with_index do |arg,idx|
+        pb=comp.ports[idx]
+        pa=arg.accept(self,args)
+        case pb
+        when Input
+          pa.connect(pb)
+        when Output
+          pb.connect(pa)
+        end
+      end
       map
     end
 
@@ -41,6 +52,7 @@ module Synchrony
     end
 
     def visitIntLit(int_lit,args=nil)
+      @circuit << int_lit.port #WARNING
       int_lit.port
     end
 
@@ -63,6 +75,9 @@ module Synchrony
       "=="   => CmpEq,
       "+"    => Add,
       "-"    => Sub,
+      "*"    => Mul,
+      "/"    => Div,
+      "mod"  => Mod,
       "or"   => Or2,
       "and"  => And2,
       "xor"  => Xor2,

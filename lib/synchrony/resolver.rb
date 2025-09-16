@@ -223,13 +223,18 @@ module Synchrony
       uint.str
     end
 
+    def klone obj
+      Marshal.load(Marshal.dump(obj))
+    end
     # instance ha1 : ha
     def visitInstance(instance,args=nil)
       str=instance.name.str
       pos=instance.name.pos
       circuit=instance.model.accept(self,args)
       if circuit
-        try_set(str,klone=circuit.clone,pos)     # "ha1" -> ha circuit model
+        clone=klone(circuit)
+        clone.name=str
+        try_set(str,clone,pos)     # "ha1" -> Ha.new circuit model
       else
         error_instance_model_not_found(instance)
         return nil

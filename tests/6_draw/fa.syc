@@ -1,0 +1,14 @@
+require "Ha"
+
+circuit Fa
+  input  a,b,ci
+  output s,co
+  wire  w1,w2,w3
+
+  instance ha1,ha2 : Ha
+
+  map ha1(a,w1,s,w2)
+  map ha2(b,ci,w1,w3)
+
+  co = w2 or w3
+end

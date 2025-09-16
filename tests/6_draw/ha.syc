@@ -1,0 +1,7 @@
+circuit Ha
+  input a,b
+  output s,co
+
+  s  = a xor b
+  co = a and b
+end

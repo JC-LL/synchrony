@@ -68,6 +68,10 @@ module Synchrony
       @outputs||=@ports.select{|port| port.instance_of?(Synchrony::Output)}
     end
 
+    def literals
+      @literals||=@ports.select{|port| !port.instance_of?(Synchrony::Input) and !port.instance_of?(Synchrony::Output)}
+    end
+
     def << e
       case e
       when Port
@@ -220,7 +224,6 @@ module Synchrony
       else
         @type=Uint.new(nbits)
       end
-      @port=Port.new() #========
     end
 
     def to_i

@@ -54,6 +54,15 @@ module Synchrony
   class Sub < Gate2
   end
 
+  class Mul < Gate2
+  end
+
+  class Div < Gate2
+  end
+
+  class Mod < Gate2
+  end
+
   class Reg < Circuit
     def initialize name=nil
       super(name)
