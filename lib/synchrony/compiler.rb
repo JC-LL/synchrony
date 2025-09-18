@@ -12,11 +12,13 @@ module Synchrony
       name_resolution()
       if @nb_errors==0
         type_checking()
-        constant_propagation()
+        if @nb_errors==0
+          constant_propagation()
+          puts pretty_print()
+          elaborate()
+          dot_view()
+        end
       end
-      puts pretty_print()
-      elaborate()
-      dot_view()
     end
 
     def parse filename
@@ -43,7 +45,9 @@ module Synchrony
 
     def type_checking
       info 0, "type checking"
-      TypeChecker.new.check(@ast)
+      checker=TypeChecker.new
+      checker.check(@ast)
+      @nb_errors=checker.nb_errors
     end
 
     def constant_propagation

@@ -57,7 +57,7 @@ module Synchrony
             token=Token.new(:bit,"bit",pos)
           when /^bits(\d+)?\b/
             token=Token.new(:bits,"bits",pos)
-          when /^int(\d+)\b/
+          when /^int(\d+)?\b/
             token=Token.new(:int,$&,pos)
           when /^uint(\d+)?\b/
             token=Token.new(:uint,$&,pos)
@@ -117,6 +117,8 @@ module Synchrony
             token=Token.new(:lbracket,"[",pos)
           when /^\]/
             token=Token.new(:rbracket,"]",pos)
+          when /^\d+\'s?[bxd]([a-f0-9])+/
+            token=Token.new(:int_lit,$&,pos)
           when /^(0[bx])?\d+/
             token=Token.new(:int_lit,$&,pos)
           when /^\"(.*)\"/

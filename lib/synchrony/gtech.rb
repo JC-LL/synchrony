@@ -37,6 +37,9 @@ module Synchrony
 
   class CmpEq < Gate2
   end
+
+  GTECH_GATES=[Inv,And2,Or2,Xor2,Nand2]
+
   #==================== RTL===================
   class Mux2 < Circuit
     def initialize name=nil
@@ -70,5 +73,28 @@ module Synchrony
       self << Output.new(:q)
     end
   end
+
+  class Slicer < Gate2
+    attr_accessor :range
+    def initialize range,name=nil
+      super(name)
+      self << Input.new(:i)
+      self << Output.new(:f)
+    end
+  end
+
+  class Joiner < Circuit
+    attr_accessor :cardinality
+    def initialize cardinality,name=nil
+      super(name)
+      cardinality.times do |i|
+        pname="i#{i}".to_sym
+        self << Input.new(pname)
+      end
+      self << Output.new(:f)
+    end
+  end
+
+  GTECH_RTL=[Reg,Add,Mux2,Add,Sub,Mul,Div,Mod,Slicer]
 
 end

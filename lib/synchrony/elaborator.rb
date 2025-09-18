@@ -121,9 +121,12 @@ module Synchrony
     end
 
     def visitBitField(bit_field,args=nil)
-      bit_field.expr.accept(self,args)
-      bit_field.range.accept(self,args)
-      bit_field
+      port_expr=bit_field.expr.accept(self,args)
+      slicer=Slicer.new(bit_field.range) # parameterized component
+      i=slicer.get_port_named(:i)
+      port_expr.connect(i)
+      f=slicer.get_port_named(:f)
+      f
     end
 
     def visitRange(range,args=nil)
@@ -133,9 +136,15 @@ module Synchrony
     end
 
     def visitConcat(concat  ,args=nil)
-      concat.lhs.accept(self,args)
-      concat.rhs.accept(self,args)
-      concat
+      port_l=concat.lhs.accept(self,args)
+      port_r=concat.rhs.accept(self,args)
+      joiner=Joiner.new(2)
+      i0=joiner.get_port_named(:i0)
+      i1=joiner.get_port_named(:i1)
+      port_l.connect(i0)
+      port_l.connect(i1)
+      f=joiner.get_port_named(:f)
+      f
     end
   end
 end

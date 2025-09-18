@@ -143,35 +143,42 @@ module Synchrony
 
     def visitUnary(unary,args=nil)
       unary.expr.accept(self,args)
+      unary
     end
 
     def visitDotExpr(dot_expr,args=nil)
       dot_expr.lhs.accept(self,args)
       dot_expr.rhs.accept(self,args)
+      dot_expr
     end
 
     def visitParenth(parenth,args=nil)
       parenth.expr.accept(self,args)
+      parenth
     end
 
     def visitCall(call,args=nil)
       call.name.accept(self,args)
       call.args.each{|arg| arg.accept(self,args)}
+      call
     end
 
     def visitBitField(bit_field,args=nil)
       bit_field.expr.accept(self,args)
       bit_field.range.accept(self,args)
+      bit_field
     end
 
     def visitRange(range,args=nil)
       range.lhs.accept(self,args)
       range.rhs.accept(self,args)
+      range
     end
 
     def visitConcat(concat  ,args=nil)
       concat.lhs.accept(self,args)
       concat.rhs.accept(self,args)
+      concat
     end
   end
 end

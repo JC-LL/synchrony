@@ -20,6 +20,12 @@ module Synchrony
 
   class TypeChecker < Visitor
 
+    attr_accessor :nb_errors
+
+    def initialize
+      @nb_errors=0
+    end
+
     def check ast,args=nil
       ast.accept(self,args)
     end
@@ -93,7 +99,7 @@ module Synchrony
       circuit=map.call.name.ref
       map.call.args.each_with_index do |actual_arg,idx|
         formal_arg=circuit.ports[idx]
-        actual_type=actual_arg.ref.type
+        actual_type=actual_arg.accept(self)
         formal_type=formal_arg.type
         unless actual_type.str==formal_type.str
           pos=get_position(map)
@@ -108,6 +114,7 @@ module Synchrony
             idx_str="#{idx}-th"
           end
           info 2,"ERROR at #{pos} : type mismatch in map. Actual #{idx_str} argument '#{actual_arg.str}' has type '#{actual_arg.ref.type.str}' while expected is '#{formal_arg.type.str}'."
+          @nb_errors+=1
         end
       end
     end
@@ -120,6 +127,7 @@ module Synchrony
       puts "bug" unless type_rhs
       unless type_lhs.str==type_rhs.str
         info 2,"ERROR at #{pos} : type mismatch in '#{assign.str}' : #{type_lhs.str} <- #{type_rhs.str}"
+        @nb_errors+=1
       end
     end
 
@@ -132,7 +140,6 @@ module Synchrony
     end
 
     def visitIdent(ident,args=nil)
-      #puts "visiting #{ident.str} at #{get_position(ident)}"
       ident.ref.type
     end
 
@@ -145,9 +152,17 @@ module Synchrony
     end
 
     def visitCondExpr(cond_expr,args=nil)
+      pos=cond_expr.pos
       cnd_type=cond_expr.cond.accept(self,args)
+      if cnd_type.class!=Bit
+        info 2,"ERROR at #{pos} : cond expression should be boolean. '#{cond_expr.str}' is #{cnd_type.str}"
+      end
       lhs_type=cond_expr.lhs.accept(self,args)
       rhs_type=cond_expr.rhs.accept(self,args)
+      if lhs_type.str!=rhs_type.str
+        info 2,"ERROR at #{pos} : both conditional expression alternatives should have the same types : #{lhs_type.str} vs #{rhs_type.str}"
+      end
+      rhs_type
     end
 
     def check_homogeneous(t1,t2,binary)
@@ -165,9 +180,11 @@ module Synchrony
       pos=binary.pos
       unless [Uint,Int].include?(t1.class)
         info 2,"ERROR at #{pos} : arithmetic error in '#{binary.str}'. '#{binary.lhs.str}' is #{t1.str} but should be Int or Uint."
+        @nb_errors+=1
       end
       unless [Uint,Int].include?(t2.class)
         info 2,"ERROR at #{pos} : arithmetic error in '#{binary.str}'. '#{binary.rhs.str}' is #{t2.str} but should be Int or Uint."
+        @nb_errors+=1
       end
     end
 
@@ -179,6 +196,9 @@ module Synchrony
       m=rhs_type.nb_bits
       ret_type=lhs_type.clone
       case binary.op.type
+      when :eqeq,:neq,:gt,:gte,:lt,:lte
+        check_homogeneous(lhs_type,rhs_type,binary)
+        ret_type=Bit.new
       when :and,:or,:xor,:nand,:nor
         check_homogeneous(lhs_type,rhs_type,binary)
         ret_type.nb_bits=[n,m].max
@@ -235,8 +255,10 @@ module Synchrony
           # ret_type already here
         when Uint
           info 2,"ERROR at #{pos} : type error in '#{unary.str}'. Cannot use '-' with type Uint. Convert explicitely to Int."
+          @nb_errors+=1
         when Bits
           info 2,"ERROR at #{pos} : type error in '#{unary.str}'. Cannot use '-' with type Bits."
+          @nb_errors+=1
           ret_type=expr_type #default in order to continue analysis.
         end
       when :subc
@@ -254,6 +276,7 @@ module Synchrony
       port=model.ports.find{|port| port.name.str==actual_rhs_str}
       unless port
         info 2,"ERROR at #{pos} : unknown port named '#{actual_rhs_str}' in circuit #{model.name.str}."
+        @nb_errors+=1
       end
       return port.type
     end
@@ -265,6 +288,7 @@ module Synchrony
     def check_is_int_literal arg
       unless [Uint,Int].include?(arg.type.class)
         info 2,"ERROR at #{arg.pos} : argument should be a int literal. Actual is #{arg.str}"
+        @nb_errors+=1
       end
     end
     #================================================
@@ -283,6 +307,7 @@ module Synchrony
       func_def=call.name.ref
       unless func_def
         info 2, "ERROR at #{pos} : unknown call to #{call.str}"
+        @nb_errors+=1
       end
       call.args.each_with_index do |actual_arg,idx|
         arg_type_actual=actual_arg.accept(self,args)
@@ -291,6 +316,7 @@ module Synchrony
         if arg_type_actual.is_a?(arg_type_formal.class)
           unless arg_type_formal.nb_bits==:generic or arg_type_actual.nb_bits==arg_type_formal.nb_bits
             info 2, "ERROR at #{pos} : argument '#{actual_arg.str}' is of type #{arg_type_actual.str} which is not compatible with formal argument declared #{formal_arg.str}"
+            @nb_errors+=1
           end
         end
       end
@@ -329,14 +355,17 @@ module Synchrony
       l,r=bit_field.range.accept(self,args)
       if l<0 or r<0
         info 2, "ERROR at #{pos} : '#{bit_field.str}' bit fields bounds must be natural numbers."
+        @nb_errors+=1
       end
       unless range.include?(l) and range.include?(r)
         info 2, "ERROR at #{pos} : '#{bit_field.str}' trying to access out of bounds of '#{bit_field.expr.str}' which is #{lhs_type.str} (bits #{max}..#{min})"
+        @nb_errors+=1
       end
       nb_bits=l-r+1
       case nb_bits
       when 0
         info 2,"ERROR : #{bitfield.str} amounts to 0 bits."
+        @nb_errors+=1
       when 1
         return Bit.new
       else

@@ -173,7 +173,7 @@ module Synchrony
         end
       else
         pos = showNext.pos
-        raise "syntax error at #{pos} : unknow type"
+        raise "syntax error at #{pos} : unknow type #{showNext.type} #{showNext.val}"
       end
       type
     end

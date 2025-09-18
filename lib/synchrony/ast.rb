@@ -218,7 +218,18 @@ module Synchrony
     attr_reader :type
     def initialize tok
       super(tok)
-      nbits=IntLit.bits_required(self.to_i)
+      case tok.val.downcase
+      when /0b([10]+)/
+        nbits=$1.size
+      when /0x([0-9a-f]+)/
+        nbits=$1.size*4
+      when /(\d+)'([bxd])([a-f0-9]+)/
+        nbits=$1.to_i
+        # WARNING : NYI we should check that $1,$2 and $3 are coherent together.
+      else #plain integer 42,-7,...
+        n=tok.val.to_i
+        nbits=IntLit.bits_required(n)
+      end
       if tok.val.to_i < 0
         @type=Int.new(nbits)
       else
@@ -226,21 +237,17 @@ module Synchrony
       end
     end
 
-    def to_i
-      tok.val.to_i
-    end
-
     def IntLit.bits_required n
       if n >= 0
         return 1 if n == 0
-        Math.log2(n).floor + 1
+        return Math.log2(n).floor + 1
       else
         k = 1
         # augmenter k jusqu’à ce que n soit représentable en complément à deux
         while n < -(2**(k-1))
           k += 1
         end
-        k
+        return k
       end
     end
 
