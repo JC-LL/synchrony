@@ -74,7 +74,7 @@ module Synchrony
     end
   end
 
-  class Slicer < Gate2
+  class Slicer < Circuit
     attr_accessor :range
     def initialize range,name=nil
       super(name)

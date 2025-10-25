@@ -122,10 +122,12 @@ module Synchrony
 
     def visitBitField(bit_field,args=nil)
       port_expr=bit_field.expr.accept(self,args)
-      slicer=Slicer.new(bit_field.range) # parameterized component
-      i=slicer.get_port_named(:i)
-      port_expr.connect(i)
-      f=slicer.get_port_named(:f)
+      # @circuit.components << slicer=Slicer.new(bit_field.range) # parameterized component
+      # i=slicer.get_port_named(:i)
+      # port_expr.connect(i)
+      # f=slicer.get_port_named(:f)
+      @circuit << f=Port.new()
+      port_expr.connect f
       f
     end
 

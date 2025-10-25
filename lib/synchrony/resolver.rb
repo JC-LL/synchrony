@@ -283,11 +283,13 @@ module Synchrony
               ident=arg
               case ident.ref
               when Input, Wire
+
               else
                 actual_kind=ident.ref.class.to_s.split("::").last.downcase
                 error_arg_th_should_be(map,idx,[:input,:wire,:literal,:expression],actual_kind)
               end
             when Binary, Unary
+            when BitField
             when IntLit
             else
               actual_kind=arg.class.to_s.split("::").last.downcase
@@ -305,6 +307,7 @@ module Synchrony
                 actual_kind=ident.ref.class.to_s.split("::").last.downcase
                 error_arg_th_should_be(map,idx,[:wire,:output],actual_kind)
               end
+            when BitField
             when Binary, Unary
             else
               actual_kind=arg.class.to_s.split("::").last.downcase
