@@ -23,6 +23,10 @@
     'name': 'keyword.wire.synchrony'
   }
   {
+    'match': '\\b(const)\\b'
+    'name': 'keyword.const.synchrony'
+  }
+  {
     'match': '\\b(init)\\b'
     'name': 'keyword.init.synchrony'
   }
@@ -31,7 +35,7 @@
     'name': 'keyword.instance.synchrony'
   }
   {
-    'match': '\\b(bit|bits|int|uint)\\b'
+    'match': '\\b(bit|bits|int([0-9]+)?|uint([0-9]+)?)\\b'
     'name': 'keyword.type.synchrony'
   }
 ]
