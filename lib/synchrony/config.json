@@ -1,0 +1,32 @@
+
+{
+  "syntax_highlighting": {
+    "require": "#A3BE8C",
+    "circuit": "#FF6B6B",
+    "end": "#FF6B6B",
+    "input": "#45B7D1",
+    "output": "#E0A4DF",
+    "wire": "#89A165",
+    "int":  "#EBCC21",
+    "uint": "#EBCC21",
+    "bit":  "#EBCC21",
+    "map":  "#7ED13F",
+    "instance":  "#7ED13F"
+  },
+  "theme": "dark",
+  "compiler_path": "synchrony",
+  "dot_path": "dot",
+  "dot_options": "-Tsvg",
+  "auto_compile": false,
+  "font": {
+    "family": "Monospace",
+    "size": 12
+  },
+  "line_numbers": {
+    "enabled": true,
+    "margin": 15
+  },
+  "keyboard_shortcuts": {
+    "compile": "F5"
+  }
+}
