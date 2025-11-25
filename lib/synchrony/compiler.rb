@@ -5,7 +5,7 @@ module Synchrony
     attr_accessor :options
 
     def compile filename
-
+      $filename=filename
       parse filename
       visit()
       pretty_print()
@@ -14,7 +14,7 @@ module Synchrony
         type_checking()
         if @nb_errors==0
           constant_propagation()
-          puts pretty_print()
+          #puts pretty_print()
           elaborate()
           dot_view()
         end
@@ -22,6 +22,7 @@ module Synchrony
     end
 
     def parse filename
+      puts "parsing"
       info 0, "parsing '#{filename}'"
       @ast=Parser.new.parse(filename)
     end

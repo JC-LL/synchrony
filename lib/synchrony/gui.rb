@@ -17,7 +17,6 @@ class SynchronyEditor
     setup_keyboard_shortcuts
   end
 
-  # ... (le reste du code reste inchangé jusqu'à la méthode apply_dark_theme)
   def load_config
     config_path = File.expand_path('config.json')
     if File.exist?(config_path)

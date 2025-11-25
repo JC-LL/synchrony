@@ -23,6 +23,9 @@ module Synchrony
   class And2 < Gate2
   end
 
+  class Nand2 < Gate2
+  end
+
   class Or2 < Gate2
   end
 
@@ -32,13 +35,13 @@ module Synchrony
   class Xor2 < Gate2
   end
 
-  class Nand2 < Gate2
+  class Nxor2 < Gate2
   end
 
   class CmpEq < Gate2
   end
 
-  GTECH_GATES=[Inv,And2,Or2,Xor2,Nand2]
+  GTECH_GATES=[Inv,And2,Nand2,Or2,Nor2,Xor2,Nxor2]
 
   #==================== RTL===================
   class Mux2 < Circuit

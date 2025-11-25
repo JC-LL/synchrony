@@ -10,7 +10,7 @@ module Synchrony
     COLORS={
       GTECH_GATES => "fff5cc",
       GTECH_RTL   => "ebab71",
-      Reg        => "115FFF"
+      Reg         => "115FFF"
     }
 
     def get_color component
@@ -33,7 +33,7 @@ module Synchrony
       dot << "rankdir=LR;"
       dot.newline
       dot << "// style global"
-      dot << "node [fontname=\"Helvetica\",fontsize=10];"
+      dot << "node [fontsize=10];"
       dot.newline
 
       dot << "// inputs"
@@ -118,7 +118,8 @@ module Synchrony
 
       dot.indent=0
       dot << "}"
-      dot.save_as "#{circuit.name.str}.dot"
+      dot_filename=$filename.sub(".syc",".dot")
+      dot.save_as dot_filename
     end
   end
 end

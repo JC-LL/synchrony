@@ -79,8 +79,11 @@ module Synchrony
       "/"    => Div,
       "mod"  => Mod,
       "or"   => Or2,
+      "nor"  => Nor2,
       "and"  => And2,
+      "nand" => Nand2,
       "xor"  => Xor2,
+      "nxor" => Nxor2,
       "not"  => Inv,
     }
 

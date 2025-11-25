@@ -288,7 +288,7 @@ module Synchrony
 
     def parse_or
       e1=parse_xor()
-      while showNext.is_a? :or
+      while [:or,:nor].include?(showNext.type)
         op=acceptIt
         e2=parse_xor()
         e1=Binary.new(e1,op,e2)
@@ -298,7 +298,7 @@ module Synchrony
 
     def parse_xor
       e1=parse_and()
-      while showNext.is_a? :xor
+      while [:xor,:nxor].include?(showNext.type)
         op=acceptIt
         e2=parse_and()
         e1=Binary.new(e1,op,e2)
@@ -308,7 +308,7 @@ module Synchrony
 
     def parse_and
       e1=parse_shift()
-      while showNext.is_a? :and
+      while [:and,:nand].include?(showNext.type)
         op=acceptIt
         e2=parse_shift()
         e1=Binary.new(e1,op,e2)

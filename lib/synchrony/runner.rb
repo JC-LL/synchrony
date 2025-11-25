@@ -10,10 +10,13 @@ module Synchrony
       compiler=Compiler.new
       compiler.options = args = parse_options(arguments)
       begin
-        if filename=args[:file]
+        if args[:gui]
+          editor = SynchronyEditor.new
+          editor.run
+        elsif filename=args[:file]
           ok=compiler.compile(filename)
         else
-          raise "need a synchrony (.syc) file : synchrony [options] <file>"
+          puts "INFO : need a synchrony (.syc) file : synchrony [options] <file>"
         end
         return ok
       rescue Exception => e
@@ -63,6 +66,10 @@ module Synchrony
 
       parser.on("--dummy_transform", "dummy ast transform") do
         options[:dummy_transform] = true
+      end
+
+      parser.on("--gui", "launch gui") do
+        options[:gui] = true
       end
 
       parser.on("--verbose", "verbose") do

@@ -15,7 +15,7 @@ module Synchrony
     end
 
     def visitCircuit(circuit,args=nil)
-      info args,"analyzing #{circuit.name.str}"
+      #info args,"analyzing #{circuit.name.str}"
       circuit.inputs.each{|input| input.accept(self,args+1)}
       circuit.outputs.each{|output| output.accept(self,args+1)}
       circuit.consts.each{|const| const.accept(self,args+1)}
@@ -26,13 +26,13 @@ module Synchrony
     end
 
     def visitConst(const,args=nil)
-      info args,"analyzing #{const.str}"
+      #info args,"analyzing #{const.str}"
       const.expr=const.expr.accept(self,args+1)
       const
     end
 
     def visitAssign(assign,args=nil)
-      info args,"interpreting #{assign.str}"
+      #info args,"interpreting #{assign.str}"
       assign.lhs.accept(self,args)
       assign.rhs=assign.rhs.accept(self,args+1)
       assign
@@ -58,7 +58,7 @@ module Synchrony
     end
 
     def visitCondExpr(cond_expr,args=nil)
-      info args,"interpreting #{cond_expr.str}"
+      #info args,"interpreting #{cond_expr.str}"
       cond_expr.cond=cond_expr.cond.accept(self,args)
       cond_expr.lhs=cond_expr.lhs.accept(self,args)
       cond_expr.rhs=cond_expr.rhs.accept(self,args)
@@ -73,7 +73,7 @@ module Synchrony
     end
 
     def visitBinary(binary,level)
-      info level,"interpreting #{binary.str}"
+      #info level,"interpreting #{binary.str}"
       binary.lhs=binary.lhs.accept(self,level+1)
       binary.rhs=binary.rhs.accept(self,level+1)
       if binary.lhs.is_a?(IntLit) and binary.rhs.is_a?(IntLit)
@@ -89,17 +89,17 @@ module Synchrony
           if binary.rhs.to_i!=0
             val=binary.lhs.to_i / binary.rhs.to_i
           else
-            info 2,"ERROR at #{binary.pos} : dvision by zero in '#{binary.str}'"
+            #info 2,"ERROR at #{binary.pos} : dvision by zero in '#{binary.str}'"
           end
         when :mod
           if binary.rhs.to_i!=0
             val=binary.lhs.to_i % binary.rhs.to_i
           else
-            info 2,"ERROR at #{binary.pos} : division by zero in '#{binary.str}'"
+            #info 2,"ERROR at #{binary.pos} : division by zero in '#{binary.str}'"
           end
         end
         lit=IntLit.create(val)
-        info level,"result=#{lit.str}"
+        #info level,"result=#{lit.str}"
         return lit
       end
       binary
@@ -181,7 +181,7 @@ module Synchrony
         bitfield_val=extract_bitfield(val,lhs,rhs)
         lit=IntLit.create(bitfield_val)
         if asked_range!=lit.nb_bits
-          info 2, "WARNING : extracting bitfield #{bit_field.range.str} (#{asked_range} bits asked) returns here an integer literal on #{lit.nb_bits} bits, which may be suprising."
+          #info 2, "WARNING : extracting bitfield #{bit_field.range.str} (#{asked_range} bits asked) returns here an integer literal on #{lit.nb_bits} bits, which may be suprising."
         end
         return lit
       end
@@ -198,7 +198,7 @@ module Synchrony
       concat.lhs=concat.lhs.accept(self,args)
       concat.rhs=concat.rhs.accept(self,args)
       if concat.lhs.is_a?(IntLit) and concat.rhs.is_a?(IntLit)
-        info 2, "NIY : concat of two int literals (may yield surprises)."
+        #info 2, "NIY : concat of two int literals (may yield surprises)."
       end
       concat
     end
