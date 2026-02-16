@@ -1,0 +1,79 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    atk (4.3.5)
+      glib2 (= 4.3.5)
+      rake
+    cairo (1.18.4)
+      native-package-installer (>= 1.0.3)
+      pkg-config (>= 1.2.2)
+      red-colors
+    cairo-gobject (4.3.5)
+      cairo (>= 1.16.2)
+      glib2 (= 4.3.5)
+    fiddle (1.1.8)
+    gdk3 (4.3.5)
+      cairo-gobject (= 4.3.5)
+      gdk_pixbuf2 (= 4.3.5)
+      pango (= 4.3.5)
+      rake
+    gdk_pixbuf2 (4.3.5)
+      gio2 (= 4.3.5)
+      rake
+    gio2 (4.3.5)
+      fiddle
+      gobject-introspection (= 4.3.5)
+    glib2 (4.3.5)
+      native-package-installer (>= 1.0.3)
+      pkg-config (>= 1.3.5)
+    gobject-introspection (4.3.5)
+      glib2 (= 4.3.5)
+    gtk3 (4.3.5)
+      atk (= 4.3.5)
+      gdk3 (= 4.3.5)
+    gtksourceview3 (4.3.5)
+      gtk3 (= 4.3.5)
+      rake
+    json (2.18.1)
+    matrix (0.4.3)
+    native-package-installer (1.1.9)
+    pango (4.3.5)
+      cairo-gobject (= 4.3.5)
+      gobject-introspection (= 4.3.5)
+    pkg-config (1.6.5)
+    rake (13.3.1)
+    red-colors (0.4.0)
+      json
+      matrix
+
+PLATFORMS
+  ruby
+  x86_64-linux-gnu
+
+DEPENDENCIES
+  glib2 (= 4.3.5)
+  gtk3 (= 4.3.5)
+  gtksourceview3 (= 4.3.5)
+
+CHECKSUMS
+  atk (4.3.5) sha256=a64933f813aa6423fc93d6152bb413cabfb730c913b1b87600e41a36d7971b06
+  cairo (1.18.4) sha256=9a07667d9aef12421d0cdceaa6287f5efbc1e8ad581a4fd07696e0f9dd472d0b
+  cairo-gobject (4.3.5) sha256=3f15ede074ce75a22c5010a1b35ab7d5d4043be04bec6afd34ac63ea76102387
+  fiddle (1.1.8) sha256=7fa8ee3627271497f3add5503acdbc3f40b32f610fc1cf49634f083ef3f32eee
+  gdk3 (4.3.5) sha256=27f782c96087d080289e015c2b9d2f651d36df068c3e9dcd7cd43a03a7bc882a
+  gdk_pixbuf2 (4.3.5) sha256=eb2255ceeacc476ee9697ca0d0377f06149e9e4b8c389d9139b508f5b51ea662
+  gio2 (4.3.5) sha256=83d575cb78aae746ee916f3b3ac09edba195ec2023a8cca3a309934e7fb420cf
+  glib2 (4.3.5) sha256=f5f2a0c012271c75ee552bfd86c2535331e2ae642390cd2fa3e3a94bfd275115
+  gobject-introspection (4.3.5) sha256=ed6e8d43cb17b68c2900a0245fc1562f21623c724e4be6e3237dd43265e0bfed
+  gtk3 (4.3.5) sha256=0f7e2596544cdd024d557d2b51b7098e5ae8f815cbec22977e819c9f32508d99
+  gtksourceview3 (4.3.5) sha256=13371dd58cda5137f31ed690c3b79320e1101f9da4234d8115ff4bc078b63e2e
+  json (2.18.1) sha256=fe112755501b8d0466b5ada6cf50c8c3f41e897fa128ac5d263ec09eedc9f986
+  matrix (0.4.3) sha256=a0d5ab7ddcc1973ff690ab361b67f359acbb16958d1dc072b8b956a286564c5b
+  native-package-installer (1.1.9) sha256=fbb41b6b22750791a4304f0a0aeea3dd837668892117f49c4caf2e8e0f4e792f
+  pango (4.3.5) sha256=0acb9a20b719a6bf1f53fa1ac39a23b4b87bb271e34ab123bfacb7b25c8f8f8d
+  pkg-config (1.6.5) sha256=33f9f81c5322983d22b439b8b672f27777b406fea23bfec74ff14bbeb42ec733
+  rake (13.3.1) sha256=8c9e89d09f66a26a01264e7e3480ec0607f0c497a861ef16063604b1b08eb19c
+  red-colors (0.4.0) sha256=2356eba0782ca6c44caa47645fbf942a2b16d85905c35c6e3f80d5ff0c04929a
+
+BUNDLED WITH
+  4.0.6

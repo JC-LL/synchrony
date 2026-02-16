@@ -1,0 +1,44 @@
+RubyGems Environment:
+  - RUBYGEMS VERSION: 3.6.7
+  - RUBY VERSION: 3.3.8 (2025-04-09 patchlevel 144) [x86_64-linux-gnu]
+  - INSTALLATION DIRECTORY: /home/jcll/.rvm/gems/ext-ruby-3.3.8-rb200bad6cd
+  - USER INSTALLATION DIRECTORY: /home/jcll/.local/share/gem/ruby/3.3.0
+  - CREDENTIALS FILE: /home/jcll/.local/share/gem/credentials
+  - RUBY EXECUTABLE: /usr/bin/ruby3.3
+  - GIT EXECUTABLE: /usr/bin/git
+  - EXECUTABLE DIRECTORY: /home/jcll/.rvm/gems/ext-ruby-3.3.8-rb200bad6cd/bin
+  - SPEC CACHE DIRECTORY: /home/jcll/.cache/gem/specs
+  - SYSTEM CONFIGURATION DIRECTORY: /etc
+  - RUBYGEMS PLATFORMS:
+     - ruby
+     - x86_64-linux-gnu
+  - GEM PATHS:
+     - /home/jcll/.rvm/gems/ext-ruby-3.3.8-rb200bad6cd
+     - /home/jcll/.rvm/gems/ext-ruby-3.3.8-rb200bad6cd@global
+  - GEM CONFIGURATION:
+     - :update_sources => true
+     - :verbose => true
+     - :backtrace => true
+     - :bulk_threshold => 1000
+  - REMOTE SOURCES:
+     - https://rubygems.org/
+  - SHELL PATH:
+     - /home/jcll/.rvm/gems/ext-ruby-3.3.8-rb200bad6cd/bin
+     - /home/jcll/.rvm/gems/ext-ruby-3.3.8-rb200bad6cd@global/bin
+     - /home/jcll/.rvm/rubies/ext-ruby-3.3.8-rb200bad6cd/bin
+     - /home/jcll/.local/bin
+     - /usr/local/bin
+     - /usr/bin
+     - /bin
+     - /usr/local/sbin
+     - /usr/sbin
+     - /sbin
+     - /home/jcll/.rvm/bin
+     - /home/jcll/.rvm/bin
+     - /opt/xilinx/2025.1/Vivado/bin
+     - /opt/GNAT/2020/bin
+     - /opt/ghdl/bin
+     - /home/jcll/.local/bin/
+     - /opt/riscv/bin
+
+     - /home/jcll/.rvm/bin
